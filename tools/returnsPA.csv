@@ -1,0 +1,27 @@
+../data\period1Data.csv,,,,
+active returns,0.003440834,,,
+sum of effects,0.003440831,,,
+overallPortfolioReturns,-0.010977711,,,
+overallBenchmarkReturns,-0.014418545,,,
+../data\period2Data.csv,,,,
+active returns,0.005892229,,,
+sum of effects,0.005892226,,,
+overallPortfolioReturns,-0.004744682,,,
+overallBenchmarkReturns,-0.010636911,,,
+../data\period3Data.csv,,,,
+active returns,0.029380594,,,
+sum of effects,0.029380596,,,
+overallPortfolioReturns,0.006797775,,,
+overallBenchmarkReturns,-0.022582818,,,
+Sector,sectorAllocationEffects,styleAllocationEffects,selectionEffects,interactionEffects
+b'Health Care',-0.00224559,0.004219553,0.002588679,0.000725795
+b'Consumer Staples',0.0040188,-0.000313054,-0.006104338,0.001778705
+b'Consumer Discretionary',-0.001564722,0.004389105,0.006499067,-0.005122365
+b'Financials',-0.004939589,-0.002253065,-0.00559232,0.00451633
+b'Energy',0.001849747,0,-0.003377292,0.000741105
+b'Materials',0.00159682,0,-0.000286062,0.001511925
+b'Telecommunications',0.029710423,0.001011152,0,-2.63E-19
+b'Industrials',0.006240359,2.23E-05,-0.003165322,0.002933082
+b'Information Technology',-0.002397166,0.000633463,1.60E-05,0.000301934
+overall cumulative active returns,0.037943491,,,
+sum of linked effects,0.037943487,,,
