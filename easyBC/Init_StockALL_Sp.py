@@ -14,7 +14,6 @@ if __name__ == '__main__':
 
     Bars = TsBarToMysql()
 
-
     # 设定需要获取数据的股票池
     stock_pool = ['603912.SH','300666.SZ','300618.SZ','002049.SZ','300672.SZ']
     total = len(stock_pool)

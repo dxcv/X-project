@@ -13,7 +13,7 @@ class Deal(object):
 
     def __init__(self,state_dt):
         # 建立数据库连接
-        db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+        db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
         cursor = db.cursor()
         try:
             sql_select = 'select * from my_capital a order by seq desc limit 1'

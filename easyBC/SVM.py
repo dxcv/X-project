@@ -1,6 +1,6 @@
 from sklearn import svm
 from easyBC import DC
-
+####简单的svm模块预测个股下个交易日涨跌。后续可以
 if __name__ == '__main__':
     stock = '002049.SZ'
     dc = DC.data_collect(stock, '2017-03-01', '2018-03-01')

@@ -1,13 +1,13 @@
 ﻿import pymysql
-import Model_Evaluate as ev
-import Filter
-import Portfolio as pf
+from easyBC import Model_Evaluate as ev
+from easyBC import Filter
+from easyBC import Portfolio as pf
 from pylab import *
-import Cap_Update_daily as cap_update
+from easyBC import Cap_Update_daily as cap_update
 import tushare as ts
 
 def get_sharp_rate():
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
 
     sql_cap = "select * from my_capital a order by seq asc"
@@ -34,9 +34,9 @@ if __name__ == '__main__':
 
 
     # 建立数据库连接,设置tushare的token,定义一些初始化参数
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
-    ts.set_token('xxxxxxxxxxxxxxxxxxxxxxxxxx')
+    ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
     pro = ts.pro_api()
     year = 2018
     date_seq_start = str(year) + '-03-01'

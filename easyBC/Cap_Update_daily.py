@@ -2,7 +2,7 @@ import pymysql
 
 def cap_update_daily(state_dt):
     para_norisk = (1.0 + 0.04/365)
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
     sql_pool = "select * from my_stock_pool"
     cursor.execute(sql_pool)

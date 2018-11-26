@@ -1,16 +1,17 @@
 import numpy as np
 import datetime
-import pymysql
+
 import copy
 import tushare as ts
+from tools.to_mysql import TsBarToMysql
 
 
 # 返回的resu中 特征值按由小到大排列，对应的是其特征向量
 def get_portfolio(stock_list,state_dt,para_window):
     # 建数据库连接，设置Tushare的token
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
-    cursor = db.cursor()
-    ts.set_token('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    Bars = TsBarToMysql()
+
+    ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
     pro = ts.pro_api()
 
     portfilio = stock_list
@@ -29,9 +30,7 @@ def get_portfolio(stock_list,state_dt,para_window):
         ri = []
         for j in range(len(portfilio)):
             sql_select = "select * from stock_all a where a.stock_code = '%s' and a.state_dt >= '%s' and a.state_dt <= '%s' order by state_dt asc" % (portfilio[j], model_test_date_seq[i], model_test_date_seq[i + 4])
-            cursor.execute(sql_select)
-            done_set = cursor.fetchall()
-            db.commit()
+            done_set = Bars.get_data(sql_select)
             temp = [x[3] for x in done_set]
             base_price = 0.00
             after_mean_price = 0.00

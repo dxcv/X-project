@@ -1,15 +1,15 @@
 from sklearn import svm
 import pymysql.cursors
 import datetime
-import DC
+from easyBC import DC
 import tushare as ts
 
 
 def model_eva(stock,state_dt,para_window,para_dc_window):
     # 建立数据库连接，设置tushare token
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
-    ts.set_token('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
     pro = ts.pro_api()
     # 建评估时间序列, para_window参数代表回测窗口长度
     model_test_date_start = (datetime.datetime.strptime(state_dt, '%Y-%m-%d') - datetime.timedelta(days=para_window)).strftime(

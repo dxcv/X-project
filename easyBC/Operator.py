@@ -1,5 +1,5 @@
 import pymysql.cursors
-import Deal
+from easyBC import Deal
 
 def buy(stock_code,opdate,buy_money):
     # 建立数据库连接
