@@ -5,7 +5,7 @@ from ClockEngine import ClockEngine
 from FeedEngine import MarketEngine
 from strategy import strategy
 from queue import Queue, Empty
-from fortfolio import *
+from portfolio import *
 
 from WindPy import w
 

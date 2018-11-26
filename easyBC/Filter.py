@@ -38,7 +38,6 @@ def filter_main(stock_new,state_dt,predict_dt,poz):
         #         print('F1 Warning !!')
         #         continue
 
-
         ans = Operator.buy(stock_new[stock_index],state_dt,poz[stock_index]*deal_buy.cur_money_rest)
         del deal_buy
     db.close()
