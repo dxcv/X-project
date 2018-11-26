@@ -1,20 +1,18 @@
 # -*- coding:utf8 -*-
 import numpy as np
 import pymysql
-
+from tools.to_mysql import TsBarToMysql
 
 class data_collect(object):
 
     def __init__(self, in_code,start_dt,end_dt):
-        ans = self.collectDATA(in_code,start_dt,end_dt)
+        self.ans = self.collectDATA(in_code,start_dt,end_dt)
 
     def collectDATA(self,in_code,start_dt,end_dt):
         # 建立数据库连接，获取日线基础行情(开盘价，收盘价，最高价，最低价，成交量，成交额)
-        db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
-        cursor = db.cursor()
+        Bars = TsBarToMysql()
         sql_done_set = "SELECT * FROM stock_all a where stock_code = '%s' and state_dt >= '%s' and state_dt <= '%s' order by state_dt asc" % (in_code, start_dt, end_dt)
-        cursor.execute(sql_done_set)
-        done_set = cursor.fetchall()
+        done_set = Bars.get_data(sql_done_set)
         if len(done_set) == 0:
             raise Exception
         self.date_seq = []
@@ -32,8 +30,7 @@ class data_collect(object):
             self.low_list.append(float(done_set[i][5]))
             self.vol_list.append(float(done_set[i][6]))
             self.amount_list.append(float(done_set[i][7]))
-        cursor.close()
-        db.close()
+        Bars.close()
         # 将日线行情整合为训练集(其中self.train是输入集，self.target是输出集，self.test_case是end_dt那天的单条测试输入)
         self.data_train = []
         self.data_target = []

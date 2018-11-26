@@ -1,5 +1,5 @@
 from sklearn import svm
-import DC
+from easyBC import DC
 
 if __name__ == '__main__':
     stock = '002049.SZ'

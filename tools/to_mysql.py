@@ -172,8 +172,10 @@ class TsBarToMysql(object):
         self.db.commit()
 
 
-    def get_data(self):
-        pass
+    def get_data(self, sql):
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        return data
 
     def close(self):
         self.db.close()

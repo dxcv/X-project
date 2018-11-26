@@ -39,10 +39,8 @@ if __name__ == '__main__':
             state_dt = (datetime.datetime.strptime(resu[1], "%Y%m%d")).strftime('%Y-%m-%d')
             try:
                 sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (state_dt,str(resu[0]),float(resu[2]),float(resu[5]),float(resu[3]),float(resu[4]),float(resu[9]),float(resu[10]),float(resu[6]),float(resu[7]),float(resu[8]))
-                cursor.execute(sql_insert)
-                db.commit()
+                Bars.insert(sql_insert)
             except Exception as err:
                 continue
-    cursor.close()
-    db.close()
+    Bars.close()
     print('All Finished!')
