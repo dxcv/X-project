@@ -42,7 +42,11 @@ def buy(stock_code,opdate,buy_money):
             db.commit()
         db.close()
         return 1
+
+    else:
+        print("现金余额不足")
     db.close()
+
     return 0
 
 def sell(stock_code,opdate,predict):
