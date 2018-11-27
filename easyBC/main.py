@@ -32,15 +32,15 @@ def get_sharp_rate():
 
 if __name__ == '__main__':
 
-
+###########################################准备工作#################################################
     # 建立数据库连接,设置tushare的token,定义一些初始化参数
+
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
     ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
     pro = ts.pro_api()
-    year = 2018
-    date_seq_start = str(year) + '-03-01'
-    date_seq_end = str(year) + '-04-01'
+    date_seq_start = '2018-03-01'
+    date_seq_end = '2018-04-01'
     stock_pool = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']
 
     # 先清空之前的测试记录,并创建中间表
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     day_index = 0
     for i in range(1,len(date_seq)):
         day_index += 1
-        # 每日推进式建模，并获取对下一个交易日的预测结果
+    ####选择品种  这里示例采用的是机器学习模块，可以替换为其他模块  #######
         for stock in stock_pool:
             try:
                 ans2 = ev.model_eva(stock,date_seq[i],90,365)
@@ -86,13 +86,13 @@ if __name__ == '__main__':
             except Exception as ex:
                 print(ex)
                 continue
-        # 每5个交易日更新一次配仓比例
+        ###### 每5个交易日更新一次配仓比例
         if divmod(day_index+4,5)[1] == 0:
             portfolio_pool = stock_pool
             if len(portfolio_pool) < 5:
                 print('Less than 5 stocks for portfolio!! state_dt : ' + str(date_seq[i]))
                 continue
-            pf_src = pf.get_portfolio(portfolio_pool,date_seq[i-1],year)
+            pf_src = pf.get_portfolio(portfolio_pool,date_seq[i-1],250)
             # 取最佳收益方向的资产组合
             risk = pf_src[1][0]
             weight = pf_src[1][1]

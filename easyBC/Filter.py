@@ -1,6 +1,6 @@
 import pymysql.cursors
 from easyBC import Deal
-from easyBC import Operator
+from easyBC import order
 
 def filter_main(stock_new,state_dt,predict_dt,poz):
     # 建立数据库连接
@@ -22,7 +22,7 @@ def filter_main(stock_new,state_dt,predict_dt,poz):
         predict = 0
         if len(done_set_predict) > 0:
             predict = int(done_set_predict[0][0])
-        ans = Operator.sell(stock,state_dt,predict)
+        ans = order.sell(stock, state_dt, predict)
 
     #后买入
     for stock_index in range(len(stock_new)):
@@ -38,6 +38,6 @@ def filter_main(stock_new,state_dt,predict_dt,poz):
         #         print('F1 Warning !!')
         #         continue
 
-        ans = Operator.buy(stock_new[stock_index],state_dt,poz[stock_index]*deal_buy.cur_money_rest)
+        ans = order.buy(stock_new[stock_index], state_dt, poz[stock_index] * deal_buy.cur_money_rest)
         del deal_buy
     db.close()

@@ -3,7 +3,7 @@ from easyBC import Deal
 
 def buy(stock_code,opdate,buy_money):
     # 建立数据库连接
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
     deal_buy = Deal.Deal(opdate)
     #后买入
@@ -47,7 +47,7 @@ def buy(stock_code,opdate,buy_money):
 
 def sell(stock_code,opdate,predict):
     # 建立数据库连接
-    db = pymysql.connect(host='127.0.0.1', user='root', passwd='admin', db='stock', charset='utf8')
+    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
 
     deal = Deal.Deal(opdate)
