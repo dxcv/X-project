@@ -1,9 +1,7 @@
 
 # encoding=utf8
 import pymysql
-
-
-class barToMysql(object):
+class ToMysql(object):
     """储存行情数据到本地数据库中"""
     def __init__(self):
         self.db_host = "localhost"
@@ -15,6 +13,26 @@ class barToMysql(object):
                                   , use_unicode=True, charset="utf8")
         # 使用 cursor() 方法创建一个游标对象 cursor
         self.cursor = self.db.cursor()
+
+    def execute(self, sql):
+        self.cursor.execute(sql)
+        self.db.commit()
+
+    def select(self, sql):
+        self.cursor.execute(sql)
+        data = self.cursor.fetchall()
+        return data
+
+    def close(self):
+        self.db.close()
+
+
+
+
+class barToMysql(ToMysql):
+    """储存行情数据到本地数据库中"""
+    def __init__(self):
+        super().__init__()
 
     def creat(self, table_name):
         self.cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
@@ -74,19 +92,12 @@ class barToMysql(object):
 
 
 
-class UrlTomysql(object):
+class UrlTomysql(ToMysql):
     ##储存网址数据到本地数据库中
 
     def __init__(self):
-        self.db_host = "localhost"
-        self.db_user = "root"
-        self.db_pass = "8261426"
-        self.db_name = "stock"
-        # 打开数据库连接
-        self.db = pymysql.connect(self.db_host, self.db_user, self.db_pass, self.db_name
-                                  , use_unicode=True, charset="utf8")
-        # 使用 cursor() 方法创建一个游标对象 cursor
-        self.cursor = self.db.cursor()
+        super().__init__()
+
 
     def creat(self, table_name):
         self.cursor.execute("DROP TABLE IF EXISTS %s" % table_name)
@@ -127,18 +138,11 @@ class UrlTomysql(object):
 
 
 
-class TsBarToMysql(object):
+class TsBarToMysql(ToMysql):
     """储存行情数据到本地数据库中"""
     def __init__(self):
-        self.db_host = "localhost"
-        self.db_user = "root"
-        self.db_pass = "8261426"
-        self.db_name = "stock"
-        # 打开数据库连接
-        self.db = pymysql.connect(self.db_host, self.db_user, self.db_pass,self.db_name
-                                  , use_unicode=True, charset="utf8")
-        # 使用 cursor() 方法创建一个游标对象 cursor
-        self.cursor = self.db.cursor()
+        super().__init__()
+
 
     def creat(self, table_name):
         self.cursor.execute("DROP TABLE IF EXISTS %s" % table_name)

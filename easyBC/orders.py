@@ -1,22 +1,18 @@
 import pymysql.cursors
 from easyBC import Deal
 from easyBC import order
-
-def filter_main(stock_new,state_dt,predict_dt,poz):
+###批量下单函数
+def change_to(stock_new, state_dt, poz):
     # 建立数据库连接
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
 
-    #先更新持股天数
-    sql_update_hold_days = 'update my_stock_pool w set w.hold_days = w.hold_days + 1'
-    cursor.execute(sql_update_hold_days)
-    db.commit()
 
     #先卖出
     deal = Deal.Deal(state_dt)
     stock_pool_local = deal.stock_pool
     for stock in stock_pool_local:
-        sql_predict = "select predict from model_ev_resu a where a.state_dt = '%s' and a.stock_code = '%s'"%(predict_dt,stock)
+        sql_predict = "select predict from model_ev_resu a where a.state_dt = '%s' and a.stock_code = '%s'"%(state_dt,stock)
         cursor.execute(sql_predict)
         done_set_predict = cursor.fetchall()
         predict = 0

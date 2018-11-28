@@ -1,6 +1,7 @@
 import pymysql.cursors
 from easyBC import Deal
-
+from tools.to_mysql import ToMysql
+###单独的交易函数
 def buy(stock_code,opdate,buy_money):
     # 建立数据库连接
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
@@ -12,17 +13,17 @@ def buy(stock_code,opdate,buy_money):
         cursor.execute(sql_buy)
         done_set_buy = cursor.fetchall()
         if len(done_set_buy) == 0:
-            return -1
+            return "缺少买入股票当日行情数据"
         buy_price = float(done_set_buy[0][3])
-        if buy_price >= 195:
-            return 0
+        if buy_price <= 0:
+            return "买入价格异常"
         vol, rest = divmod(min(deal_buy.cur_money_rest, buy_money), buy_price * 100)
         vol = vol * 100
         if vol == 0:
-            return 0
-        new_capital = deal_buy.cur_capital - vol * buy_price * 0.0005
-        new_money_lock = deal_buy.cur_money_lock + vol * buy_price
-        new_money_rest = deal_buy.cur_money_rest - vol * buy_price * 1.0005
+            return "买入数量为0"
+        new_capital = deal_buy.cur_capital - vol * buy_price * 0.0005  ##手续费为万5，直接减少净资产
+        new_money_lock = deal_buy.cur_hold + vol * buy_price     ##受限制资产，股票日内卖出需要考虑，这里意义不大，留个接口后续再填。
+        new_money_rest = deal_buy.cur_money_rest - vol * buy_price * 1.0005 ##新货币资金余额
         sql_buy_update2 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,state_dt,deal_price)VALUES ('%.2f', '%.2f', '%.2f','%s','%s','%i','%s','%.2f')" % (new_capital, new_money_lock,new_money_rest, 'buy', stock_code, vol, opdate, buy_price)
         cursor.execute(sql_buy_update2)
         db.commit()
@@ -62,16 +63,16 @@ def sell(stock_code,opdate,predict):
     cursor.execute(sql_sell_select)
     done_set_sell_select = cursor.fetchall()
     if len(done_set_sell_select) == 0:
-        return -1
+        return "缺少股票""+stock_code+opdate+行情数据"
     sell_price = float(done_set_sell_select[0][3])
 
     if sell_price > init_price*1.03 and hold_vol > 0:
-        new_money_lock = deal.cur_money_lock - sell_price*hold_vol
+        new_holds = deal.cur_hold - sell_price * hold_vol
         new_money_rest = deal.cur_money_rest + sell_price*hold_vol
         new_capital = deal.cur_capital + (sell_price-init_price)*hold_vol
         new_profit = (sell_price-init_price)*hold_vol
         new_profit_rate = sell_price/init_price
-        sql_sell_insert = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" %(new_capital,new_money_lock,new_money_rest,'SELL',stock_code,hold_vol,new_profit,new_profit_rate,'GOODSELL',opdate,sell_price)
+        sql_sell_insert = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" %(new_capital, new_holds, new_money_rest, 'SELL', stock_code, hold_vol, new_profit, new_profit_rate, 'GOODSELL', opdate, sell_price)
         cursor.execute(sql_sell_insert)
         db.commit()
         sql_sell_update = "delete from my_stock_pool where stock_code = '%s'" % (stock_code)
@@ -81,12 +82,12 @@ def sell(stock_code,opdate,predict):
         return 1
 
     elif sell_price < init_price*0.97 and hold_vol > 0:
-        new_money_lock = deal.cur_money_lock - sell_price*hold_vol
+        new_holds = deal.cur_hold - sell_price * hold_vol
         new_money_rest = deal.cur_money_rest + sell_price*hold_vol
         new_capital = deal.cur_capital + (sell_price-init_price)*hold_vol
         new_profit = (sell_price-init_price)*hold_vol
         new_profit_rate = sell_price/init_price
-        sql_sell_insert2 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" %(new_capital,new_money_lock,new_money_rest,'SELL',stock_code,hold_vol,new_profit,new_profit_rate,'BADSELL',opdate,sell_price)
+        sql_sell_insert2 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" %(new_capital, new_holds, new_money_rest, 'SELL', stock_code, hold_vol, new_profit, new_profit_rate, 'BADSELL', opdate, sell_price)
         cursor.execute(sql_sell_insert2)
         db.commit()
         sql_sell_update2 = "delete from my_stock_pool where stock_code = '%s'" % (stock_code)
@@ -99,12 +100,12 @@ def sell(stock_code,opdate,predict):
         return 1
 
     elif hold_days >= 4 and hold_vol > 0:
-        new_money_lock = deal.cur_money_lock - sell_price * hold_vol
+        new_holds = deal.cur_hold - sell_price * hold_vol
         new_money_rest = deal.cur_money_rest + sell_price * hold_vol
         new_capital = deal.cur_capital + (sell_price - init_price) * hold_vol
         new_profit = (sell_price - init_price) * hold_vol
         new_profit_rate = sell_price / init_price
-        sql_sell_insert3 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" % (new_capital, new_money_lock, new_money_rest, 'OVERTIME', stock_code, hold_vol, new_profit, new_profit_rate,'OVERTIMESELL', opdate,sell_price)
+        sql_sell_insert3 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" % (new_capital, new_holds, new_money_rest, 'OVERTIME', stock_code, hold_vol, new_profit, new_profit_rate, 'OVERTIMESELL', opdate, sell_price)
         cursor.execute(sql_sell_insert3)
         db.commit()
         sql_sell_update3 = "delete from my_stock_pool where stock_code = '%s'" % (stock_code)
@@ -114,13 +115,13 @@ def sell(stock_code,opdate,predict):
         return 1
 
     elif predict == -1:
-        new_money_lock = deal.cur_money_lock - sell_price * hold_vol
+        new_holds = deal.cur_hold - sell_price * hold_vol
         new_money_rest = deal.cur_money_rest + sell_price * hold_vol
         new_capital = deal.cur_capital + (sell_price - init_price) * hold_vol
         new_profit = (sell_price - init_price) * hold_vol
         new_profit_rate = sell_price / init_price
         sql_sell_insert4 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" % (
-        new_capital, new_money_lock, new_money_rest, 'Predict', stock_code, hold_vol, new_profit, new_profit_rate,
+            new_capital, new_holds, new_money_rest, 'Predict', stock_code, hold_vol, new_profit, new_profit_rate,
         'PredictSell', opdate, sell_price)
         cursor.execute(sql_sell_insert4)
         db.commit()

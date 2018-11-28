@@ -1,18 +1,12 @@
 
-DROP TABLE IF EXISTS stock_info;
+DROP TABLE IF EXISTS my_stock_pool;
 
-CREATE TABLE stock_info (
-  state_dt varchar(45) NOT NULL,
+CREATE TABLE my_stock_pool (
   stock_code varchar(45) NOT NULL,
-  open decimal(20,2) DEFAULT NULL,
-  close decimal(20,2) DEFAULT NULL,
-  high decimal(20,2) DEFAULT NULL,
-  low decimal(20,2) DEFAULT NULL,
-  vol int(20) DEFAULT NULL,
-  amount decimal(30,2) DEFAULT NULL,
-  pre_close decimal(20,2) DEFAULT NULL,
-  amt_change decimal(20,2) DEFAULT NULL,
-  pct_change decimal(20,2) DEFAULT NULL,
-  big_order_cntro decimal(20,2) DEFAULT NULL,
-  big_order_delt decimal(20,2) DEFAULT NULL,
-  PRIMARY KEY (state_dt,stock_code))
+  order_time varchar(45) NOT NULL,
+  trade_side varchar(45) NOT NULL,
+  volume decimal(20,2) DEFAULT NULL,
+  price decimal(20,2) DEFAULT NULL,
+  amount decimal(20,2) DEFAULT NULL,
+  err_msg varchar(45) DEFAULT NULL,
+  PRIMARY KEY (order_time,stock_code))
