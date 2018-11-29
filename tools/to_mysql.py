@@ -27,8 +27,6 @@ class ToMysql(object):
         self.db.close()
 
 
-
-
 class barToMysql(ToMysql):
     """储存行情数据到本地数据库中"""
     def __init__(self):

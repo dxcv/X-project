@@ -152,9 +152,6 @@ def checkSum(sectors, sectorAllocationEffects, styleAllocationEffects, selection
     outfile.write('active returns,' + str(activeReturns) + '\n')
     outfile.write('sum of effects,' + str(sumofEffects) + '\n')
 
-
-
-
 def runmain(argv=1):
     if argv == 1:
         argv = sys.argv
