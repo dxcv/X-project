@@ -31,7 +31,7 @@ class Deal(object):
             else:
                 print("账户表初始化未成功")
 
-            sql_select2 = 'select * from my_stock_pool'
+            sql_select2 = 'select * from my_position a where a.date = %s' %repr(state_dt)
             cursor.execute(sql_select2)
             done_set2 = cursor.fetchall()
             self.stock_pool = []
@@ -41,17 +41,14 @@ class Deal(object):
             self.stock_map3 = []
             self.ban_list = []       ##禁止买入池
             if len(done_set2) > 0:
-                self.stock_pool = [x[0] for x in done_set2 if x[2] > 0]
-                self.stock_all = [x[0] for x in done_set2]
-                self.stock_map1 = {x[0]: float(x[1]) for x in done_set2}  #买入价格
-                self.stock_map2 = {x[0]: int(x[2]) for x in done_set2}    #持仓数量
-                self.stock_map3 = {x[0]: int(x[3]) for x in done_set2}    #持仓天数
-            for i in range(len(done_set2)):
-                sql = "select * from stock_info a where a.stock_code = '%s' and a.state_dt = '%s'"%(done_set2[i][0],state_dt)
-                cursor.execute(sql)
-                done_temp = cursor.fetchall()
-                db.commit()
-                self.cur_hold += float(done_temp[0][3]) * float(done_set2[i][2])
+                self.stock_pool = [x[0] for x in done_set2]
+                self.stock_cost_price = {x[0]: float(x[1]) for x in done_set2}  #买入价格
+                self.stock_revenue = {x[0]: int(x[2]) for x in done_set2}    #利润
+                self.stock_volume = {x[0]: int(x[3]) for x in done_set2}    #持仓数量
+                self.stock_amount = {x[0]: int(x[4]) for x in done_set2}  # 持仓金额
+                self.stock_margin = {x[0]: int(x[5]) for x in done_set2}  # 保证金
+                self.stock_side = {x[0]: int(x[6]) for x in done_set2}  # 持仓方向
+
             # sql_select3 = 'select * from ban_list'
             # cursor.execute(sql_select3)
             # done_set3 = cursor.fetchall()
