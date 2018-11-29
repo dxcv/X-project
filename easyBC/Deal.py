@@ -16,16 +16,21 @@ class Deal(object):
         db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
         cursor = db.cursor()
         try:
-            sql_select = 'select * from my_capital a order by seq desc limit 1'
+            sql_select = 'select * from my_capital a where a.date = %s' %repr(state_dt)
             cursor.execute(sql_select)
             done_set = cursor.fetchall()
 
-            self.cur_capital = 0.00 # 初始化的时候会用到
-            self.cur_money_rest = 0.00 # 初始化的时候会用到
-            self.cur_hold = 0.00  #每次调用会重新计算仓位市值
+
             if len(done_set) > 0:
-                self.cur_capital = float(done_set[0][0])
-                self.cur_money_rest = float(done_set[0][2])
+                self.cur_date =done_set[0][0]
+                self.cur_available_fund = float(done_set[0][1])
+                self.cur_holding_value = float(done_set[0][2])
+                self.cur_margin = float(done_set[0][3])
+                self.cur_total_asset = float(done_set[0][4])
+
+            else:
+                print("账户表初始化未成功")
+
             sql_select2 = 'select * from my_stock_pool'
             cursor.execute(sql_select2)
             done_set2 = cursor.fetchall()

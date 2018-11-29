@@ -74,11 +74,10 @@ class main(object):
         print('ALL FINISHED!!')
 
 
-
     def handle_data(self,trdate, context):
         for stock in self.securities:
             try:
-                ans2 = ev.model_eva(stock, trdate, 90, 365)
+                ##ans2 = ev.model_eva(stock, trdate, 90, 365)
                 ##这里其实没啥用，懒得写了，仅仅用作示例，后续换成其他的就好了
                 # print('Date : ' + str(date_seq[i]) + ' Update : ' + str(stock))
                 pass

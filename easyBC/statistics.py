@@ -1,6 +1,8 @@
 from pylab import *
 import pandas as pd
 from tools.to_mysql import ToMysql
+import numpy as np
+
 
 def get_sharp_rate():
     db =ToMysql()
@@ -50,13 +52,14 @@ def r(nav_df):   #计算收益率,超额收益率，夏普比率，基准夏普�
 
 
 if __name__ == '__main__':
-    nav_df = pd.read_csv(./data/300.csv)
+    nav_df = pd.read_csv("./data/500.csv")
     assessment_stg = pd.DataFrame([], columns=['年化收益率', '年化超额收益率', '夏普比率', '基准夏普比率', '胜率', '信息比率', '最大回撤', '基准最大回撤'])
     nav_df['year'] = [i[0:4] for i in nav_df['time']]
-    re = nav_df[nav_df["year"] == "2010"]
     res = pd.DataFrame(nav_df.groupby('year').apply(r))
     for year in list(res.index):
         assessment_stg.loc[year] = res.loc[year, 0]
     print(assessment_stg)
+    assessment_stg.to_csv("./data/500out.csv",encoding="gbk")
+
 
 
