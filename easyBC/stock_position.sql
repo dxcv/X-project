@@ -2,7 +2,7 @@
 
 DROP TABLE IF EXISTS my_position;
 
-CREATE TABLE my_capital (
+CREATE TABLE my_position (
   trdate varchar(45) NOT NULL,
   code varchar(45) NOT NULL,
   cost_price decimal(30,2) NOT NULL,
