@@ -20,7 +20,7 @@ class Deal(object):
             cursor.execute(sql_select)
             done_set = cursor.fetchall()
 
-
+           ##读取capital数据
             if len(done_set) > 0:
                 self.cur_date =done_set[0][0]
                 self.cur_available_fund = float(done_set[0][1])
