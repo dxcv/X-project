@@ -7,8 +7,8 @@ def buy(stock_code,opdate,buy_money):
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
     deal_buy = Deal.Deal(opdate)
-    #后买入
-    if deal_buy.cur_available_fund >= buy_money:
+
+    if deal_buy.cur_available_fund >= buy_money: ##现金要充足
         sql_buy = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
         cursor.execute(sql_buy)
         done_set_buy = cursor.fetchall()
@@ -17,15 +17,16 @@ def buy(stock_code,opdate,buy_money):
         buy_price = float(done_set_buy[0][3])
         if buy_price <= 0:
             return "买入价格异常"
-        vol, rest = divmod(min(deal_buy.cur_money_rest, buy_money), buy_price * 100)
+        vol, rest = divmod(min(deal_buy.cur_available_fund, buy_money), buy_price * 100)
         vol = vol * 100
         if vol == 0:
             return "买入数量为0"
         ###更新账户表my_capital######
-        new_capital = deal_buy.cur_capital - vol * buy_price * 0.0005  ##手续费为万5，直接减少净资产
-        new_money_lock = deal_buy.cur_hold + vol * buy_price     ##受限制资产，股票日内卖出需要考虑，这里意义不大，留个接口后续再填。
-        new_money_rest = deal_buy.cur_money_rest - vol * buy_price * 1.0005 ##新货币资金余额
-        sql_buy_update2 = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,state_dt,deal_price)VALUES ('%.2f', '%.2f', '%.2f','%s','%s','%i','%s','%.2f')" % (new_capital, new_money_lock,new_money_rest, 'buy', stock_code, vol, opdate, buy_price)
+        new_capital = deal_buy.cur_total_asset - vol * buy_price * 0.0005  ##手续费为万5，直接减少净资产
+        new_available_fund = deal_buy.cur_available_fund - vol * buy_price * 1.0005     ##减少相应的现金。
+        new_holding_value = deal_buy.cur_holding_value + vol * buy_price ##增加持仓市值
+        new_margin = 0          ##先不填这个坑
+        sql_buy_update2 = "insert into my_capital(date,available_fund,holding_value,margin,total_asset)VALUES ('%s', '%.2f', '%.2f','%.2f','%.2f')" % (new_capital, new_money_lock,new_money_rest, 'buy', stock_code, vol, opdate, buy_price)
         cursor.execute(sql_buy_update2)
         db.commit()
 
