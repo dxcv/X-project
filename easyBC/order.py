@@ -1,14 +1,16 @@
 import pymysql.cursors
 from easyBC import Deal
 from tools.to_mysql import ToMysql
-###单独的交易函数
+
+# 单独的交易函数
 def buy(stock_code,opdate,buy_money):
     # 建立数据库连接
+    db1 = ToMysql()
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
     deal_buy = Deal.Deal(opdate)
 
-    if deal_buy.cur_available_fund >= buy_money: ##现金要充足
+    if deal_buy.cur_available_fund >= buy_money: # 现金要充足
         sql_buy = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
         cursor.execute(sql_buy)
         done_set_buy = cursor.fetchall()
@@ -21,12 +23,14 @@ def buy(stock_code,opdate,buy_money):
         vol = vol * 100
         if vol == 0:
             return "买入数量为0"
-        ###更新账户表my_capital######
-        new_capital = deal_buy.cur_total_asset - vol * buy_price * 0.0005  ##手续费为万5，直接减少净资产
-        new_available_fund = deal_buy.cur_available_fund - vol * buy_price * 1.0005     ##减少相应的现金。
-        new_holding_value = deal_buy.cur_holding_value + vol * buy_price ##增加持仓市值
-        new_margin = 0          ##先不填这个坑
-        sql_buy_update2 = "insert into my_capital(date,available_fund,holding_value,margin,total_asset)VALUES ('%s', '%.2f', '%.2f','%.2f','%.2f')" % (new_capital, new_money_lock,new_money_rest, 'buy', stock_code, vol, opdate, buy_price)
+        # 更新账户表my_capital
+        new_capital = deal_buy.cur_total_asset - vol * buy_price * 0.0005  # 手续费为万5，直接减少净资产
+        new_available_fund = deal_buy.cur_available_fund - vol * buy_price * 1.0005     # 减少相应的现金。
+        new_holding_value = deal_buy.cur_holding_value + vol * buy_price # 增加持仓市值
+        new_margin = 0          # 先不填这个坑
+        sql_buy_update2 = "insert into my_capital(date,available_fund,holding_value,margin,total_asset)VALUES " \
+                          "('%s', '%.2f', '%.2f','%.2f','%.2f')" \
+                          % (opdate, new_available_fund, new_holding_value, new_margin, new_capital)
         cursor.execute(sql_buy_update2)
         db.commit()
 

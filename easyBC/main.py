@@ -86,15 +86,13 @@ class main(object):
                 print(ex)
 
     def schedule(self,trdate, context):
-        ###定期运行函数####
+        # 定期运行函数####
         portfolio_pool = context
         pf_src = pf.get_portfolio(portfolio_pool, trdate, 250)
         # 取最佳收益方向的资产组合
         risk = pf_src[1][0]
         weight = pf_src[1][1]
         orders.change_to(portfolio_pool, trdate, weight)
-
-
 
     def change_securities(self,code_list):
         self.securities = code_list
@@ -103,7 +101,7 @@ class main(object):
         db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
         cursor = db.cursor()
 
-        ###更新position表#####
+        # 更新position表
         Deal.Deal(state_dt)
 
         sql_insert = "insert into my_position(capital,money_lock,money_rest,bz,state_dt)values('%.2f','%.2f','%.2f','%s','%s')" % (
