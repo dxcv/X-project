@@ -3,7 +3,7 @@ from easyBC import Deal
 from tools.to_mysql import ToMysql
 
 # 单独的交易函数
-def buy(stock_code,opdate,buy_money):
+def buy(stock_code,opdate,buy_money,trade_side):
     # 建立数据库连接
     db1 = ToMysql()
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
@@ -15,92 +15,145 @@ def buy(stock_code,opdate,buy_money):
         cursor.execute(sql_buy)
         done_set_buy = cursor.fetchall()
         if len(done_set_buy) == 0:
-            return "缺少买入股票当日行情数据"
+            new_err_msg = "缺少买入股票当日行情数据"
         buy_price = float(done_set_buy[0][3])
         if buy_price <= 0:
-            return "买入价格异常"
+            new_err_msg ="买入价格异常"
         vol, rest = divmod(min(deal_buy.cur_available_fund, buy_money), buy_price * 100)
         vol = vol * 100
         if vol == 0:
-            return "买入数量为0"
+            new_err_msg ="买入数量为0"
         # 更新账户表my_capital
         new_capital = deal_buy.cur_total_asset - vol * buy_price * 0.0005  # 手续费为万5，直接减少净资产
         new_available_fund = deal_buy.cur_available_fund - vol * buy_price * 1.0005     # 减少相应的现金。
         new_holding_value = deal_buy.cur_holding_value + vol * buy_price # 增加持仓市值
-        new_margin = 0          # 先不填这个坑
-        sql_buy_update2 = "insert into my_capital(date,available_fund,holding_value,margin,total_asset)VALUES " \
-                          "('%s', '%.2f', '%.2f','%.2f','%.2f')" \
-                          % (opdate, new_available_fund, new_holding_value, new_margin, new_capital)
-        cursor.execute(sql_buy_update2)
+        new_margin = 0 # 先不填这个坑
+        sql_buyorder_update ="UPDATE my_capital SET available_fund = %.2f," \
+                             "holding_value = %.2f," \
+                             "margin = %.2f," \
+                             "total_asset = %.2f  " \
+                             "WHERE date = '%s'  " % (new_available_fund, new_holding_value, new_margin, new_capital,opdate)
+        cursor.execute(sql_buyorder_update)
         db.commit()
 
-        ###更新orders表###
-        new_buy_price = (deal_buy.stock_map1[stock_code] * deal_buy.stock_map2[stock_code] + vol * buy_price) / (
-                    deal_buy.stock_map2[stock_code] + vol)
-        new_vol = deal_buy.stock_map2[stock_code] + vol
-        sql_buy_update3 = "update my_orders w set w.buy_price = (select '%.2f' from dual) where w.stock_code = '%s'" % (
-        new_buy_price, stock_code)
-        sql_buy_update3b = "update my_orders w set w.hold_vol = (select '%i' from dual) where w.stock_code = '%s'" % (
-        new_vol, stock_code)
-        sql_buy_update3c = "update my_orders w set w.hold_days = (select '%i' from dual) where w.stock_code = '%s'" % (
-        1, stock_code)
-        cursor.execute(sql_buy_update3)
-        cursor.execute(sql_buy_update3b)
-        cursor.execute(sql_buy_update3c)
-        db.commit()
-        sql_buy_update3 = "insert into my_orders(stock_code,buy_price,hold_vol,hold_days) VALUES ('%s','%.2f','%i','%i')" % (
-        stock_code, buy_price, vol, int(1))
-        cursor.execute(sql_buy_update3)
+        # 更新orders表
+        new_stock_code = stock_code
+        new_order_time = opdate
+        new_trade_side = trade_side
+        new_volume = vol
+        new_price = buy_price
+        new_amount = vol * buy_price
+        new_err_msg = 1
+
+        sql_order_update = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
+                           "VALUES ('%s','%s','%s',%.2f,,%.2f,%.2f,'%s')" \
+                           % (new_stock_code,new_order_time,new_trade_side,new_volume,new_price,new_amount,new_err_msg
+                              )
+        cursor.execute(sql_order_update)
         db.commit()
 
-        ###更新position表#####
+        # 更新position表
+        #判断是不是在持仓里面
+        if stock_code in deal_buy.stock_pool:
+            new_code = stock_code
+            new_amount = deal_buy.stock_amount["stock_code"] + vol * buy_price
+            new_revenue = deal_buy.stock_revenue["stock_code"]
+            new_cost_price = (new_amount-new_revenue)/buy_price
+            new_volume = new_amount/buy_price
+            new_margin = 0
+            new_side = "buy"
+            sql_position_update ="UPDATE my_position SET code = '%s'," \
+                             "cost_price = %.2f,revenue = %.2f," \
+                             "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s'"\
+                             "WHERE code = '%s' " % (new_code, new_cost_price,new_revenue,new_volume,new_amount,new_margin,new_side,new_code)
+            cursor.execute(sql_position_update)
+            db.commit()
+        else:
+            new_code = stock_code
+            new_amount = vol * buy_price
+            new_revenue = 0
+            new_cost_price = buy_price
+            new_volume = vol
+            new_margin = 0
+            new_side = 1
 
-
-
-
-
+            sql_position_insert = "insert into my_position(code,cost_price,revenue,volume,amount,margin,side) " \
+                                  "VALUES ('%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
+                                  % (new_code, new_cost_price,new_revenue,new_volume,new_amount,new_margin,new_side
+                                     )
+            cursor.execute(sql_position_insert)
+            db.commit()
         db.close()
         return 1
-
     else:
         print("现金余额不足")
     db.close()
-
     return 0
 
-def sell(stock_code,opdate,predict):
+
+
+def sell(stock_code,opdate,sell_money,trade_side):
     # 建立数据库连接
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
 
-    deal = Deal.Deal(opdate)
-    init_price = deal.stock_map1[stock_code]
-    hold_vol = deal.stock_map2[stock_code]
-    hold_days = deal.stock_map3[stock_code]
+    deal_sell = Deal.Deal(opdate)
+
     sql_sell_select = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
     cursor.execute(sql_sell_select)
     done_set_sell_select = cursor.fetchall()
     if len(done_set_sell_select) == 0:
         return "缺少股票""+stock_code+opdate+行情数据"
     sell_price = float(done_set_sell_select[0][3])
+    vol = sell_money/sell_price
     ###更新账户表my_capital######
-    if sell_price > init_price*1.03 and hold_vol > 0:
-        new_holds = deal.cur_hold - sell_price * hold_vol
-        new_money_rest = deal.cur_money_rest + sell_price*hold_vol
-        new_capital = deal.cur_capital + (sell_price-init_price)*hold_vol
-        new_profit = (sell_price-init_price)*hold_vol
-        new_profit_rate = sell_price/init_price
-        sql_sell_insert = "insert into my_capital(capital,money_lock,money_rest,deal_action,stock_code,stock_vol,profit,profit_rate,bz,state_dt,deal_price)values('%.2f','%.2f','%.2f','%s','%s','%.2f','%.2f','%.2f','%s','%s','%.2f')" %(new_capital, new_holds, new_money_rest, 'SELL', stock_code, hold_vol, new_profit, new_profit_rate, 'GOODSELL', opdate, sell_price)
-        cursor.execute(sql_sell_insert)
-        db.commit()
-        sql_sell_update = "delete from my_orders where stock_code = '%s'" % (stock_code)
-        cursor.execute(sql_sell_update)
-        db.commit()
-        db.close()
-        return 1
+    new_capital = deal_sell.cur_total_asset  #卖出净资产不变
+    new_available_fund = deal_sell.cur_available_fund + sell_money  # 增加相应的现金。
+    new_holding_value = deal_sell.cur_holding_value - sell_money  # 减少持仓市值
+    new_margin = 0  # 先不填这个坑
+    sql_sellorder_update = "UPDATE my_capital SET available_fund = %.2f," \
+                          "holding_value = %.2f," \
+                          "margin = %.2f," \
+                          "total_asset = %.2f  " \
+                          "WHERE date = '%s'  " % (
+                          new_available_fund, new_holding_value, new_margin, new_capital, opdate)
+    cursor.execute(sql_sellorder_update)
+    db.commit()
     ###更新orders表###
+    new_stock_code = stock_code
+    new_order_time = opdate
+    new_trade_side = trade_side
+    new_volume = vol
+    new_price = sell_price
+    new_amount = vol * sell_price
+    new_err_msg = 1
+
+    sql_order_update = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
+                       "VALUES ('%s','%s','%s',%.2f,,%.2f,%.2f,'%s')" \
+                       % (
+                       new_stock_code, new_order_time, new_trade_side, new_volume, new_price, new_amount, new_err_msg
+                       )
+    cursor.execute(sql_order_update)
+    db.commit()
 
     ###更新position表#####
+    new_code = stock_code
+    new_amount = vol * buy_price
+    new_revenue = 0
+    new_cost_price = buy_price
+    new_volume = vol
+    new_margin = 0
+    new_side = 1
+
+    sql_position_insert = "insert into my_position(code,cost_price,revenue,volume,amount,margin,side) " \
+                          "VALUES ('%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
+                          % (new_code, new_cost_price, new_revenue, new_volume, new_amount, new_margin, new_side
+                             )
+    cursor.execute(sql_position_insert)
+    db.commit()
+
+
+
 
     db.close()
     return 0

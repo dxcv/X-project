@@ -8,7 +8,7 @@ if __name__ == '__main__':
     ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
     pro = ts.pro_api()
     # 设定获取日线行情的初始日期和终止日期，其中终止日期设定为昨天。
-    start_dt = '20100101'
+    start_dt = '20100406'
     end_dt = "20181130"
     df = pro.trade_cal(exchange_id='', is_open=1, start_date=start_dt, end_date=end_dt)
     date_temp = list(df.iloc[:, 1])
