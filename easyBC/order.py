@@ -40,7 +40,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
         new_err_msg = 1
 
         sql_order_update = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
-                           "VALUES ('%s','%s','%s',%.2f,,%.2f,%.2f,'%s')" \
+                           "VALUES ('%s','%s','%s',%.2f,%.2f,%.2f,'%s')" \
                            % (new_stock_code,new_order_time,new_trade_side,new_volume,new_price,new_amount,new_err_msg
                               )
         db.execute(sql_order_update)
@@ -57,8 +57,8 @@ def buy(stock_code,opdate,buy_money,trade_side):
             new_side = "buy"
             sql_position_update = "UPDATE my_position SET code = '%s'," \
                              "cost_price = %.2f,revenue = %.2f," \
-                             "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' "\
-                                  % (new_code, new_cost_price,new_revenue,new_volume,new_amount,new_margin,new_side,new_code)
+                             "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' AND trdate = '%s' "\
+                                  % (new_code, new_cost_price,new_revenue,new_volume,new_amount,new_margin,new_side,new_code,opdate)
             db.execute(sql_position_update)
         else:
             new_code = stock_code
@@ -69,9 +69,9 @@ def buy(stock_code,opdate,buy_money,trade_side):
             new_margin = 0
             new_side = 1
 
-            sql_position_insert = "insert into my_position(code,cost_price,revenue,volume,amount,margin,side) " \
-                                  "VALUES ('%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
-                                  % (new_code, new_cost_price, new_revenue, new_volume, new_amount, new_margin, new_side
+            sql_position_insert = "insert into my_position(trdate,code,cost_price,revenue,volume,amount,margin,side) " \
+                                  "VALUES ('%s','%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
+                                  % (opdate,new_code, new_cost_price, new_revenue, new_volume, new_amount, new_margin, new_side
                                      )
             db.execute(sql_position_insert)
         return 1
@@ -113,13 +113,12 @@ def sell(stock_code, opdate, sell_money, trade_side):
         new_price = sell_price
         new_amount = vol * sell_price
         new_err_msg = 1
-        sql_order_update = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
-                           "VALUES ('%s','%s','%s',%.2f,,%.2f,%.2f,'%s')" \
+        sql_order_insert = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
+                           "VALUES ('%s','%s','%s',%.2f,%.2f,%.2f,'%s')" \
                            % (
-                               new_stock_code, new_order_time, new_trade_side, new_volume, new_price, new_amount,
-                               new_err_msg
+                               new_stock_code, new_order_time, new_trade_side, new_volume, new_price, new_amount, new_err_msg
                            )
-        db.execute(sql_order_update)
+        db.execute(sql_order_insert)
         # 更新position表
         new_code = stock_code
         new_amount = deal_sell.stock_amount["stock_code"] - vol * sell_price
@@ -129,17 +128,16 @@ def sell(stock_code, opdate, sell_money, trade_side):
         new_margin = 0
         new_side = "buy"
         if new_amount == 0:
-            sql_position_delete = "DELETE FROM myposition" \
-                                 "WHERE code = stock_code"
+            sql_position_delete = "DELETE FROM my_position" \
+                                 "WHERE code = '%s' AND trdate = '%s'" %(stock_code,opdate)
             db.execute(sql_position_delete)
         else:
             sql_position_update = "UPDATE my_position SET code = '%s'," \
                                   "cost_price = %.2f,revenue = %.2f," \
                                   "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s'" \
-                                  "WHERE code = '%s' " % (
-                                      new_code, new_cost_price, new_revenue, new_volume, new_amount, new_margin,
-                                      new_side,
-                                      new_code)
+                                  "WHERE code = '%s' AND trdate = '%s'" \
+                                  % (new_code, new_cost_price, new_revenue, new_volume, new_amount, new_margin,
+                                      new_side,new_code,opdate)
             db.execute(sql_position_update)
     else:
         print("卖出金额超限")

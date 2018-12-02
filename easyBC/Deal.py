@@ -23,18 +23,18 @@ class Deal(object):
             else:
                 print("账户表初始化未成功")
             # 读取position数据
-            sql_select2 = 'select * from my_position a where a.date = %s' % repr(state_dt)
+            sql_select2 = "select * from my_position a where a.trdate = %s" % repr(state_dt)
             cursor.execute(sql_select2)
             done_set2 = cursor.fetchall()
 
             if len(done_set2) > 0:
-                self.stock_pool = [x[0] for x in done_set2]
-                self.stock_cost_price = {x[0]: float(x[1]) for x in done_set2}  # 买入价格
-                self.stock_revenue = {x[0]: int(x[2]) for x in done_set2}    # 利润
-                self.stock_volume = {x[0]: int(x[3]) for x in done_set2}    # 持仓数量
-                self.stock_amount = {x[0]: int(x[4]) for x in done_set2}  # 持仓金额
-                self.stock_margin = {x[0]: int(x[5]) for x in done_set2}  # 保证金
-                self.stock_side = {x[0]: int(x[6]) for x in done_set2}  # 持仓方向
+                self.stock_pool = [x[1] for x in done_set2]
+                self.stock_cost_price = {x[1]: float(x[2]) for x in done_set2}  # 买入价格
+                self.stock_revenue = {x[1]: int(x[3]) for x in done_set2}    # 利润
+                self.stock_volume = {x[1]: int(x[4]) for x in done_set2}    # 持仓数量
+                self.stock_amount = {x[1]: int(x[5]) for x in done_set2}  # 持仓金额
+                self.stock_margin = {x[1]: int(x[6]) for x in done_set2}  # 保证金
+                self.stock_side = {x[1]: x[7] for x in done_set2}  # 持仓方向
 
             else:
                 self.stock_pool = ["cash"]

@@ -2,11 +2,12 @@ import pymysql.cursors
 from easyBC import Deal
 from easyBC import order
 ###批量下单函数
+
+
 def change_to(stock_new, state_dt, poz):
     # 建立数据库连接
     db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
     cursor = db.cursor()
-
 
     #先卖出
     deal = Deal.Deal(state_dt)
@@ -18,7 +19,7 @@ def change_to(stock_new, state_dt, poz):
         predict = 0
         if len(done_set_predict) > 0:
             predict = int(done_set_predict[0][0])
-        ans = order.sell(stock, state_dt, predict)
+        ans = order.sell(stock, state_dt,deal.stock_amount[stock],"sell")
 
     #后买入
     for stock_index in range(len(stock_new)):
@@ -34,6 +35,6 @@ def change_to(stock_new, state_dt, poz):
         #         print('F1 Warning !!')
         #         continue
 
-        ans = order.buy(stock_new[stock_index], state_dt, poz[stock_index] * deal_buy.cur_money_rest)
+        ans = order.buy(stock_new[stock_index], state_dt, poz[stock_index] * deal_buy.cur_available_fund,"buy")
         del deal_buy
     db.close()

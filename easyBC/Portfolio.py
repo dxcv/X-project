@@ -84,7 +84,7 @@ def get_portfolio(stock_list,state_dt,para_window):
 
 if __name__ == '__main__':
     pf = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']
-    ans = get_portfolio(pf,'2018-01-01',90)
+    ans = get_portfolio(pf,'2018-01-01',30)
     print('**************  Market Trend  ****************')
     print('Risk : ' + str(round(ans[0][0], 2)))
     print('Sharp ratio : ' + str(round(ans[0][2], 2)))
