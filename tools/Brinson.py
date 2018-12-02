@@ -172,6 +172,7 @@ def runmain(argv=1):
     cumBReturns = 1
 
     for f in files:
+        linkedAttr
         if len(sectorNames) == 0:
             data = np.recfromtxt(f, delimiter=',', names=True)
             names = data.dtype.names
