@@ -33,10 +33,9 @@ def buy(stock_code,opdate,buy_money,trade_side):
                              "WHERE date = '%s'  " % (new_available_fund, new_holding_value, new_margin, new_capital,opdate)
         db.execute(sql_buyorder_update)
         # 更新position cash
-        sql_position_cash = "UPDATE my_position SET code = '%s'," \
-                              "cost_price = %.2f,revenue = %.2f," \
-                              "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' AND trdate = '%s' " \
-                              % ("cash", 1, 0, float(new_available_fund),float(new_available_fund), 0, "buy","cash", opdate)
+        sql_position_cash = "UPDATE my_position SET code = '%s',cost_price = %.2f,revenue = %.2f," \
+                              "volume = %.2f,amount = %.2f,margin= %.2f,side='%s'  WHERE code = '%s' AND  trdate = '%s' " \
+                              % ('cash', 1, 0, float(new_available_fund),float(new_available_fund), 0, 'buy','cash', opdate)
         db.execute(sql_position_cash)
 
         # 更新orders表
@@ -66,7 +65,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
             new_side = "buy"
             sql_position_update = "UPDATE my_position SET code = '%s'," \
                              "cost_price = %.2f,revenue = %.2f," \
-                             "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' AND trdate = '%s' "\
+                             "volume = %.2f,amount = %.2f,margin= %.2f,side='%s' WHERE code = '%s' AND trdate = '%s' "\
                                   % (new_code, new_cost_price,new_revenue,new_volume,new_amount,new_margin,new_side,new_code,opdate)
             db.execute(sql_position_update)
         else:
