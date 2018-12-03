@@ -1,42 +1,91 @@
 # encoding: UTF-8
-
-import pymysql.cursors
 from easyBC import Deal
 from easyBC import order
+from tools.to_mysql import TsBarToMysql
+from WindPy import *
+w.start()
+import pandas as pd
 ###批量下单函数
 
 
-def change_to(stock_new, state_dt, poz):
+def change_to(stock_new, state_dt,**poz):
     # 建立数据库连接
-    db = pymysql.connect(host="localhost", user='root', passwd='8261426', db='stock', charset='utf8')
-    cursor = db.cursor()
-
-    #先卖出
+    db =  TsBarToMysql()
     deal = Deal.Deal(state_dt)
-    stock_pool_local = deal.stock_pool
-    for stock in stock_pool_local[1:]:
-        sql_predict = "select predict from model_ev_resu a where a.state_dt = '%s' and a.stock_code = '%s'"%(state_dt,stock)
-        cursor.execute(sql_predict)
-        done_set_predict = cursor.fetchall()
-        predict = 0
-        if len(done_set_predict) > 0:
-            predict = int(done_set_predict[0][0])
-        ans = order.sell(stock, state_dt,deal.stock_amount[stock],"sell")
+    old_stocklist = deal.stock_pool[1:]
 
-    #后买入
-    for stock_index in range(len(stock_new)):
-        deal_buy = Deal.Deal(state_dt)
+    data = w.wss(stock_new, "mkt_freeshares,pre_close", "unit=1;tradeDate=" + state_dt + ";priceAdj=U;cycle=D")
+    target_po = pd.DataFrame(data.Data, columns=data.Codes, index=data.Fields).T
+    sumvl = target_po["MKT_FREESHARES"].sum()
+    now_position = deal.stock_amount
+    ##计算停牌股
+    if deal.stock_pool == []:
+        tingpai_list = []
+        vll = 0
 
-        # # 如果模型f1分值低于50则不买入
-        # sql_f1_check = "select * from model_ev_resu a where a.stock_code = '%s' and a.state_dt < '%s' order by a.state_dt desc limit 1"%(stock_new[stock_index],state_dt)
-        # cursor.execute(sql_f1_check)
-        # done_check = cursor.fetchall()
-        # db.commit()
-        # if len(done_check) > 0:
-        #     if float(done_check[0][4]) < 0.5:
-        #         print('F1 Warning !!')
-        #         continue
+    else:
+        data2 = w.wss(stock_new, "trade_status", "tradeDate=" + state_dt)
+        tingpai = pd.DataFrame(data2.Data, columns=data2.Codes, index=data2.Fields).T
+        jiaoyi_list = tingpai[tingpai['TRADE_STATUS'] == "交易"].index.tolist()
+        tingpai_list = list(set(stock_new) - set(jiaoyi_list))
+        vll = 0          # 停牌市值
+        for i in now_position.keys():
+            if i in tingpai_list:
+                vll = vll + now_position[i]
+            else:
+                pass
 
-        ans = order.buy(stock_new[stock_index], state_dt, poz[stock_index] * deal_buy.cur_available_fund,"buy")
-        del deal_buy
+    vl = (deal.cur_total_asset - vll)
+    if poz == {}:
+        target_po["weight"] = [i / sumvl for i in target_po["MKT_FREESHARES"].tolist()]
+    else:
+        target_po["weight"] = poz["poz"]
+
+
+    target_po["target_vl"] = [i * vl for i in target_po["weight"].tolist()]
+
+    hold = list(set(old_stocklist) & set(stock_new))
+    sell1 = list(set(old_stocklist) - set(hold))
+    sell = list(set(sell1) - set(tingpai_list))
+    buy1 = list(set(stock_new) - set(hold))
+    list_order = list(set(hold + sell + buy1))
+    buy_order = {}
+    sell_order = {}
+    sell_order1 = {}
+
+    for i in list_order:
+        if i in hold:
+            if now_position[i] - target_po["target_vl"].loc[i] < 0:
+                buy_order[i] = abs(now_position[i] - target_po["target_vl"].loc[i])
+
+            else:
+                sell_order[i] = abs(now_position[i] - target_po["target_vl"].loc[i])
+
+
+        elif i in buy1:
+
+            buy_order[i] = target_po["target_vl"].loc[i]
+
+        elif i in sell:
+
+            sell_order1[i] = now_position[i]
+
+        else:
+            print("股票不在列表中")
+
+    for i in sell_order1:
+        order.sell(i,state_dt , sell_order1[i], "sell")
+        print("卖出%s  %s股" %(i,sell_order1[i]))
+
+
+    for i in sell_order:
+        order.sell(i,state_dt , sell_order[i], "sell")
+        print("卖出%s  %s元" %(i,sell_order[i]))
+        # print(err["err_code"])
+        # print(err["err_msg"])
+    for i in buy_order:
+        order.buy(i, state_dt, buy_order[i], "buy")
+        print("买入%s  %s元" %(i,buy_order[i]))
+        # print(err["err_code"])
+        # print(err["err_msg"])
     db.close()

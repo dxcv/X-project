@@ -298,12 +298,7 @@ fig.tight_layout()
 plt.show()
 
 
-
-
-
-
-
-    ###因子交叉分析
+    # 因子交叉分析
     dddata = data.groupby( ['VAL_PE_DEDUCTED_TTM_group','EST_PEG_group'])["i_weight"].sum()
     x= dddata.index.levels[1].tolist()
     y = dddata.index.levels[0].tolist()

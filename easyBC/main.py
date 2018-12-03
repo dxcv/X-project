@@ -12,8 +12,8 @@ class main(object):
     def __init__(self):
         self.securities = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']     # 回测标的
         self.capital = 100000000    # 初始本金
-        self.start_date = '2010-03-01'  # 回测开始时间
-        self.end_date = '2011-04-01'  # 回测结束时间
+        self.start_date = '2018-08-01'  # 回测开始时间
+        self.end_date = '2018-09-01'  # 回测结束时间
         self.period = 'd'   # 策略运行周期, 'd' 代表日, 'm'代表分钟  现在还没有m
         # 建回测时间序列
         ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
@@ -34,6 +34,10 @@ class main(object):
         db.execute(sql_wash1)
         sql_wash2 = 'delete from my_position'
         db.execute(sql_wash2)
+        sql_wash3 = 'delete from stock_info'
+        db.execute(sql_wash3)
+        sql_wash4 = 'delete from orders'
+        db.execute(sql_wash4)
         sql_setCash = "INSERT INTO my_capital VALUES (%s, %s, 0, 0, %s)"\
                      % (repr(self.start_date), self.capital, self.capital)
         db.execute(sql_setCash)
@@ -42,6 +46,7 @@ class main(object):
                      % (self.date_seq[0], "cash", 1, 0, self.capital, self.capital, 0,"buy")
         db.execute(sql_insert)
         db.close()
+        self.get_bars(self.date_seq[0])
 
     def get_bars(self, trdate):
         db = ToMysql()
@@ -75,7 +80,7 @@ class main(object):
             self.handle_data(self.date_seq[i], self.securities)
 
             ###### 每5个交易日运行一次自定义交易函数，这里是更新一次配仓比例 ()
-            if divmod(day_index + 5, 5)[1] == 0:
+            if divmod(day_index + 4, 5)[1] == 0:
                 self.schedule(self.date_seq[i], self.securities)
             print('Runnig to Date :  ' + str(self.date_seq[i]))
         print('ALL FINISHED!!')
@@ -97,8 +102,8 @@ class main(object):
         pf_src = pf.get_portfolio(portfolio_pool, trdate, 250)
         # 取最佳收益方向的资产组合
         risk = pf_src[1][0]
-        weight = pf_src[1][1]
-        orders.change_to(portfolio_pool, trdate, weight)
+        poz = pf_src[1][1]
+        orders.change_to(portfolio_pool, trdate, poz= poz)
 
     def change_securities(self,code_list):
         self.securities = code_list

@@ -88,8 +88,6 @@ class barToMysql(ToMysql):
         pass
 
 
-
-
 class UrlTomysql(ToMysql):
     ##储存网址数据到本地数据库中
 

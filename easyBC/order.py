@@ -9,7 +9,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
     db = ToMysql()
     deal_buy = Deal.Deal(opdate)
 
-    if deal_buy.cur_available_fund >= buy_money: # 现金要充足
+    if deal_buy.cur_available_fund+1 >= buy_money: # 现金要充足
         sql_buy = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
         done_set_buy = db.select(sql_buy)
         if len(done_set_buy) == 0:
@@ -32,6 +32,13 @@ def buy(stock_code,opdate,buy_money,trade_side):
                              "total_asset = %.2f  " \
                              "WHERE date = '%s'  " % (new_available_fund, new_holding_value, new_margin, new_capital,opdate)
         db.execute(sql_buyorder_update)
+        # 更新position cash
+        sql_position_cash = "UPDATE my_position SET code = '%s'," \
+                              "cost_price = %.2f,revenue = %.2f," \
+                              "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' AND trdate = '%s' " \
+                              % ("cash", 1, 0, float(new_available_fund),float(new_available_fund), 0, "buy","cash", opdate)
+        db.execute(sql_position_cash)
+
         # 更新orders表
         new_stock_code = stock_code
         new_order_time = opdate
@@ -41,7 +48,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
         new_amount = vol * buy_price
         new_err_msg = 1
 
-        sql_order_update = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
+        sql_order_update = "insert into orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
                            "VALUES ('%s','%s','%s',%.2f,%.2f,%.2f,'%s')" \
                            % (new_stock_code,new_order_time,new_trade_side,new_volume,new_price,new_amount,new_err_msg
                               )
@@ -107,6 +114,13 @@ def sell(stock_code, opdate, sell_money, trade_side):
                                "WHERE date = '%s'  " % (
                                    new_available_fund, new_holding_value, new_margin, new_capital, opdate)
         db.execute(sql_sellorder_update)
+        # 更新position cash
+        sql_position_cash = "UPDATE my_position SET code = '%s'," \
+                            "cost_price = %.2f,revenue = %.2f," \
+                            "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' AND trdate = '%s' " \
+                            % ("cash", 1, 0, float(new_available_fund),float(new_available_fund), 0, "buy",
+                               "cash", opdate)
+        db.execute(sql_position_cash)
         # 更新orders表###
         new_stock_code = stock_code
         new_order_time = opdate
@@ -115,7 +129,7 @@ def sell(stock_code, opdate, sell_money, trade_side):
         new_price = sell_price
         new_amount = vol * sell_price
         new_err_msg = 1
-        sql_order_insert = "insert into my_orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
+        sql_order_insert = "insert into orders(stock_code,order_time,trade_side,volume,price,amount,err_msg) " \
                            "VALUES ('%s','%s','%s',%.2f,%.2f,%.2f,'%s')" \
                            % (
                                new_stock_code, new_order_time, new_trade_side, new_volume, new_price, new_amount, new_err_msg
