@@ -141,7 +141,7 @@ class main(object):
                 new_side = deal_daily.stock_side[i]
                 new_volume = new_amount/new_price
                 new_holding_value = new_holding_value + new_amount
-                sql_insert = "insert into position(trdate,code,cost_price,revenue,volume,amount,margin,side) " \
+                sql_insert = "insert into my_position(trdate,code,cost_price,revenue,volume,amount,margin,side) " \
                              "VALUES ('%s','%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
                              % (new_trdate, i, new_cost_price, new_revenue,new_volume, new_amount, new_margin, new_side)
                 db.execute(sql_insert)
