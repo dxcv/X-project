@@ -1,3 +1,4 @@
+# encoding: UTF-8
 import datetime
 import tushare as ts
 from tools.to_mysql import TsBarToMysql

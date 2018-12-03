@@ -1,4 +1,5 @@
-﻿from easyBC import orders
+﻿# encoding: UTF-8
+from easyBC import orders
 from easyBC import Portfolio as pf
 from pylab import *
 import tushare as ts
@@ -11,8 +12,8 @@ class main(object):
     def __init__(self):
         self.securities = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']     # 回测标的
         self.capital = 100000000    # 初始本金
-        self.start_date = '2018-03-01'  # 回测开始时间
-        self.end_date = '2018-04-01'  # 回测结束时间
+        self.start_date = '2010-03-01'  # 回测开始时间
+        self.end_date = '2011-04-01'  # 回测结束时间
         self.period = 'd'   # 策略运行周期, 'd' 代表日, 'm'代表分钟  现在还没有m
         # 建回测时间序列
         ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
@@ -33,8 +34,6 @@ class main(object):
         db.execute(sql_wash1)
         sql_wash2 = 'delete from my_position'
         db.execute(sql_wash2)
-        sql_wash3 = 'truncate table my_stock_pool'
-        db.execute(sql_wash3)
         sql_setCash = "INSERT INTO my_capital VALUES (%s, %s, 0, 0, %s)"\
                      % (repr(self.start_date), self.capital, self.capital)
         db.execute(sql_setCash)

@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 import pymysql.cursors
 from easyBC import Deal
 from easyBC import order
@@ -12,7 +14,7 @@ def change_to(stock_new, state_dt, poz):
     #先卖出
     deal = Deal.Deal(state_dt)
     stock_pool_local = deal.stock_pool
-    for stock in stock_pool_local:
+    for stock in stock_pool_local[1:]:
         sql_predict = "select predict from model_ev_resu a where a.state_dt = '%s' and a.stock_code = '%s'"%(state_dt,stock)
         cursor.execute(sql_predict)
         done_set_predict = cursor.fetchall()

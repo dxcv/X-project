@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 import numpy as np
 import datetime
 

@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 from easyBC import Deal
 from tools.to_mysql import ToMysql
 
