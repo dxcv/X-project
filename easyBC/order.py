@@ -134,7 +134,7 @@ def sell(stock_code, opdate, sell_money, trade_side):
     if sell_money < deal_sell.stock_amount[stock_code]:
         vol = sell_money / sell_price
         # 更新账户表my_capital######
-        new_capital = deal_sell.cur_total_asset - sell_money  # 卖出净资产不变
+        new_capital = deal_sell.cur_total_asset  # 卖出净资产不变
         new_available_fund = deal_sell.cur_available_fund + sell_money  # 增加相应的现金。
         new_holding_value = deal_sell.cur_holding_value - sell_money  # 减少持仓市值
         new_margin = 0  # 先不填这个坑
