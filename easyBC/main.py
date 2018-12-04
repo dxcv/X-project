@@ -234,7 +234,7 @@ class main(object):
         print('Sharp Rate : ' + str(sharp))
         print('Risk Factor : ' + str(c_std))
 
-        sql_show_btc = "select * from stock_index a where a.stock_code = '000001.SH' and a.state_dt >= '%s' and a.state_dt <= '%s' order by state_dt asc" % (
+        sql_show_btc = "select * from stock_all a where a.stock_code = '000001.SH' and a.state_dt >= '%s' and a.state_dt <= '%s'" % (
         self.start_date, self.end_date)
         done_set_show_btc = db.select(sql_show_btc)
         # btc_x = [x[0] for x in done_set_show_btc]
@@ -257,7 +257,7 @@ class main(object):
 
 if __name__ == '__main__':
     a=main()
-    a.go()
+    a.afterbc()
 
 
 
