@@ -10,9 +10,12 @@ import pandas as pd
 
 def change_to(stock_new, state_dt,**poz):
     # 建立数据库连接
-    db =  TsBarToMysql()
+    db = TsBarToMysql()
     deal = Deal.Deal(state_dt)
-    old_stocklist = deal.stock_pool[1:]
+    old_stocklist = deal.stock_pool
+    if old_stocklist == None:
+        old_stocklist = []
+
 
     data = w.wss(stock_new, "mkt_freeshares,pre_close", "unit=1;tradeDate=" + state_dt + ";priceAdj=U;cycle=D")
     target_po = pd.DataFrame(data.Data, columns=data.Codes, index=data.Fields).T
@@ -48,7 +51,11 @@ def change_to(stock_new, state_dt,**poz):
     sell1 = list(set(old_stocklist) - set(hold))
     sell = list(set(sell1) - set(tingpai_list))
     buy1 = list(set(stock_new) - set(hold))
+    #sell1.remove("cash")
+    #sell.remove("cash")
+    #buy1.remove("cash")
     list_order = list(set(hold + sell + buy1))
+    #list_order.remove("cash")
     buy_order = {}
     sell_order = {}
     sell_order1 = {}

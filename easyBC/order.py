@@ -1,20 +1,33 @@
 # encoding: UTF-8
-
+import tushare as ts
 from easyBC import Deal
 from tools.to_mysql import ToMysql
-
+from datetime import datetime
 # 单独的交易函数
 def buy(stock_code,opdate,buy_money,trade_side):
     # 建立数据库连接
     db = ToMysql()
     deal_buy = Deal.Deal(opdate)
-
+    ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
+    pro = ts.pro_api()
     if deal_buy.cur_available_fund+1 >= buy_money: # 现金要充足
         sql_buy = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
         done_set_buy = db.select(sql_buy)
         if len(done_set_buy) == 0:
             print("缺少买入股票当日行情数据")
-        buy_price = float(done_set_buy[0][3])
+            opdate2 = (datetime.strptime(opdate, "%Y-%m-%d")).strftime('%Y%m%d')
+            resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
+            if len(resu) !=0:
+                print("已经从互联网获取数据")
+            buy_price = resu["pre_close"][0]
+
+            sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
+                        opdate, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),
+                        float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]), float(resu.iloc[0][7]), float(resu.iloc[0][8]))
+            db.execute(sql_insert)
+            print("缺少买入股票当日行情数据")
+        else:
+            buy_price = float(done_set_buy[0][8])
         if buy_price <= 0:
             print("买入价格异常")
         vol, rest = divmod(min(deal_buy.cur_available_fund, buy_money), buy_price * 100)
@@ -57,8 +70,8 @@ def buy(stock_code,opdate,buy_money,trade_side):
         #判断是不是在持仓里面
         if stock_code in deal_buy.stock_pool:
             new_code = stock_code
-            new_amount = deal_buy.stock_amount["stock_code"] + vol * buy_price
-            new_revenue = deal_buy.stock_revenue["stock_code"]
+            new_amount = deal_buy.stock_amount[stock_code] + vol * buy_price
+            new_revenue = deal_buy.stock_revenue[stock_code]
             new_volume = new_amount / buy_price
             new_cost_price = (new_amount-new_revenue)/new_volume
             new_margin = 0
@@ -92,14 +105,30 @@ def buy(stock_code,opdate,buy_money,trade_side):
 def sell(stock_code, opdate, sell_money, trade_side):
     # 建立数据库连接
     db = ToMysql()
+    ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
+    pro = ts.pro_api()
     deal_sell = Deal.Deal(opdate)
     sql_sell_select = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" \
                       % (opdate, stock_code)
     done_set_sell_select = db.select(sql_sell_select)
     if len(done_set_sell_select) == 0:
-        return "缺少股票""+stock_code+opdate+行情数据"
-    if sell_money < deal_sell.stock_amount["stock_code"]:
-        sell_price = float(done_set_sell_select[0][3])
+        print("缺少买入股票当日行情数据")
+        opdate2 = (datetime.strptime(opdate, "%Y-%m-%d")).strftime('%Y%m%d')
+        resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
+        if len(resu) != 0:
+            print("已经从互联网获取数据")
+        sell_price = resu["pre_close"][0]
+
+        sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
+            opdate, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),
+                        float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]), float(resu.iloc[0][7]), float(resu.iloc[0][8]))
+        db.execute(sql_insert)
+
+    else:
+        sell_price = float(done_set_sell_select[0][8])
+
+
+    if sell_money < deal_sell.stock_amount[stock_code]:
         vol = sell_money / sell_price
         # 更新账户表my_capital######
         new_capital = deal_sell.cur_total_asset  # 卖出净资产不变
@@ -116,7 +145,7 @@ def sell(stock_code, opdate, sell_money, trade_side):
         # 更新position cash
         sql_position_cash = "UPDATE my_position SET code = '%s'," \
                             "cost_price = %.2f,revenue = %.2f," \
-                            "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s' WHERE code = '%s' AND trdate = '%s' " \
+                            "volume = %.2f,amount = %.2f,margin= %.2f,side='%s' WHERE code = '%s' AND trdate = '%s' " \
                             % ("cash", 1, 0, float(new_available_fund),float(new_available_fund), 0, "buy",
                                "cash", opdate)
         db.execute(sql_position_cash)
@@ -136,8 +165,8 @@ def sell(stock_code, opdate, sell_money, trade_side):
         db.execute(sql_order_insert)
         # 更新position表
         new_code = stock_code
-        new_amount = deal_sell.stock_amount["stock_code"] - vol * sell_price
-        new_revenue = deal_sell.stock_revenue["stock_code"]
+        new_amount = deal_sell.stock_amount[stock_code] - vol * sell_price
+        new_revenue = deal_sell.stock_revenue[stock_code]
         new_volume = new_amount / sell_price
         new_cost_price = (new_amount - new_revenue) / new_volume
         new_margin = 0

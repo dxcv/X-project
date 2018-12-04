@@ -31,6 +31,11 @@ class Deal(object):
 
             if len(done_set2) > 0:
                 self.stock_pool = [x[1] for x in done_set2]
+                if "cash" in self.stock_pool:
+                    self.stock_pool.remove("cash")
+
+                if self.stock_pool == None:
+                    self.stock_pool = []
                 self.stock_cost_price = {x[1]: float(x[2]) for x in done_set2}  # 买入价格
                 self.stock_revenue = {x[1]: int(x[3]) for x in done_set2}    # 利润
                 self.stock_volume = {x[1]: int(x[4]) for x in done_set2}    # 持仓数量
