@@ -13,14 +13,14 @@ class main(object):
         self.securities = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']     # 回测标的
         self.capital = 100000000    # 初始本金
         self.start_date = '2018-08-01'  # 回测开始时间
-        self.end_date = '2018-09-01'  # 回测结束时间
+        self.end_date = '2018-12-01'  # 回测结束时间
         self.period = 'd'   # 策略运行周期, 'd' 代表日, 'm'代表分钟  现在还没有m
         # 建回测时间序列
         ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
-        pro = ts.pro_api()
+        self.pro = ts.pro_api()
         back_test_date_start = (datetime.strptime(self.start_date, '%Y-%m-%d')).strftime('%Y%m%d')
         back_test_date_end = (datetime.strptime(self.end_date, "%Y-%m-%d")).strftime('%Y%m%d')
-        df = pro.trade_cal(exchange_id='', is_open=1, start_date=back_test_date_start, end_date=back_test_date_end)
+        df = self.pro.trade_cal(exchange_id='', is_open=1, start_date=back_test_date_start, end_date=back_test_date_end)
         self.date_temp = list(df.iloc[:, 1])
         self.date_seq = [(datetime.strptime(x, "%Y%m%d")).strftime('%Y-%m-%d') for x in self.date_temp]
 
@@ -180,11 +180,11 @@ class main(object):
                 if len(done_set_buy) == 0:
                     print("缺少买入股票当日行情数据")
                     opdate2 = (datetime.strptime(state_dt_1, "%Y-%m-%d")).strftime('%Y%m%d')
-                    resu = pro.daily(ts_code=i, trade_date = opdate2)
+                    resu = self.pro.daily(ts_code=i, trade_date = opdate2)
                     if len(resu) != 0:
                         print("已经从互联网获取数据")
-                    new_price = resu["close"]
-                    pct_change = resu["pct_change"]
+                    new_price = resu["close"][0]
+                    pct_change = resu["pct_change"][0]
 
                     sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
                         state_dt_1, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),
