@@ -178,7 +178,7 @@ def sell(stock_code, opdate, sell_money, trade_side):
         else:
             sql_position_update = "UPDATE my_position SET code = '%s'," \
                                   "cost_price = %.2f,revenue = %.2f," \
-                                  "volume = %.2f,amount = %.2f,margin= %.2f,side=,'%s'" \
+                                  "volume = %.2f,amount = %.2f,margin= %.2f,side='%s'" \
                                   "WHERE code = '%s' AND trdate = '%s'" \
                                   % (new_code, new_cost_price, new_revenue, new_volume, new_amount, new_margin,
                                       new_side,new_code,opdate)
