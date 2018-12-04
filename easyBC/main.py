@@ -186,7 +186,7 @@ class main(object):
                         print("已经从互联网获取"+str(i)+"   "+str(state_dt_1)+"  行情数据")
                         new_price = resu["close"][0]
                         pct_change = resu["pct_chg"][0]
-                        sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
+                        sql_insert = "INSERT IGNORE INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
                             state_dt_1, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]),
                             float(resu.iloc[0][3]), float(resu.iloc[0][4]),
                             float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]),

@@ -111,7 +111,7 @@ def sell(stock_code, opdate, sell_money, trade_side):
                       % (opdate, stock_code)
     done_set_sell_select = db.select(sql_sell_select)
     if len(done_set_sell_select) == 0:
-        print("缺少买入股票当日行情数据"+ str(stock_code) + "   "+ str(opdate))
+        print("缺少卖出股票当日行情数据"+ str(stock_code) + "   "+ str(opdate))
         opdate2 = (datetime.strptime(opdate, "%Y-%m-%d")).strftime('%Y%m%d')
         resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
         if len(resu) != 0:
@@ -134,7 +134,7 @@ def sell(stock_code, opdate, sell_money, trade_side):
     if sell_money < deal_sell.stock_amount[stock_code]:
         vol = sell_money / sell_price
         # 更新账户表my_capital######
-        new_capital = deal_sell.cur_total_asset  # 卖出净资产不变
+        new_capital = deal_sell.cur_total_asset - sell_money  # 卖出净资产不变
         new_available_fund = deal_sell.cur_available_fund + sell_money  # 增加相应的现金。
         new_holding_value = deal_sell.cur_holding_value - sell_money  # 减少持仓市值
         new_margin = 0  # 先不填这个坑

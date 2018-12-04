@@ -13,7 +13,7 @@ def code_list():
     Bars = TsBarToMysql()
 
     start_dt = '20080101'
-    end_dt = "20101130"
+    end_dt = "20181130"
     stock_pool = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']
     #con_list = pro.index_weight(index_code='000906.Sh', start_date="20180505", end_date="20181203")
     #stock_pool = list(set(con_list.con_code.tolist()))
