@@ -5,7 +5,6 @@ import numpy as np
 
 def get_sharp_rate():
     db =ToMysql()
-
     sql_cap = "select * from my_capital a order by date"
     done_exp = db.select(sql_cap)
     cap_list = [float(x[4])/100000000 for x in done_exp]

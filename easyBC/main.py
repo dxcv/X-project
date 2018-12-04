@@ -226,7 +226,7 @@ class main(object):
 
     def afterbc(self):
         db = ToMysql()
-        sharp, c_std = statistics.get_sharp_rate()
+        sharp,c_std = statistics.get_sharp_rate()
         print('Sharp Rate : ' + str(sharp))
         print('Risk Factor : ' + str(c_std))
 
@@ -241,19 +241,6 @@ class main(object):
         for a in range(len(btc_x)):
             dict_anti_x[btc_x[a]] = done_set_show_btc[a][0]
             dict_x[done_set_show_btc[a][0]] = btc_x[a]
-
-        # sql_show_profit = "select * from my_capital order by state_dt asc"
-        sql_show_profit = "select max(a.capital),a.state_dt from my_capital a where a.state_dt is not null group by a.state_dt order by a.state_dt asc"
-        done_set_show_profit = db.select(sql_show_profit)
-        profit_x = [dict_x[x[1]] for x in done_set_show_profit]
-        profit_y = [x[0] / done_set_show_profit[0][0] for x in done_set_show_profit]
-
-        # 绘制收益率曲线（含大盘基准收益曲线）
-        def c_fnx(val, poz):
-            if val in dict_anti_x.keys():
-                return dict_anti_x[val]
-            else:
-                return ''
 
         fig = plt.figure(figsize=(20, 12))
         ax = fig.add_subplot(111)
