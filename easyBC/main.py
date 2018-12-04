@@ -185,7 +185,7 @@ class main(object):
                     if len(resu) != 0:
                         print("已经从互联网获取"+str(i)+"   "+str(state_dt_1)+"  行情数据")
                         new_price = resu["close"][0]
-                        pct_change = resu["pct_change"][0]
+                        pct_change = resu["pct_chg"][0]
                         sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
                             state_dt_1, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]),
                             float(resu.iloc[0][3]), float(resu.iloc[0][4]),
@@ -208,7 +208,7 @@ class main(object):
                 new_margin = deal_daily.stock_margin[i]
                 new_side = deal_daily.stock_side[i]
                 new_volume = new_amount/new_price
-                new_holding_value = new_holding_value + new_amount
+                new_holding_value = float(new_holding_value) + float(new_amount)
                 sql_insert = "insert into my_position(trdate,code,cost_price,revenue,volume,amount,margin,side)" \
                              " VALUES ('%s','%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')"\
                              % (new_trdate, i, new_cost_price, new_revenue,new_volume, new_amount, new_margin, new_side)
