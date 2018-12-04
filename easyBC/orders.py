@@ -45,7 +45,7 @@ def change_to(stock_new, state_dt,**poz):
         target_po["weight"] = poz["poz"]
 
 
-    target_po["target_vl"] = [i * vl for i in target_po["weight"].tolist()]
+    target_po["target_vl"] = [i * vl*0.99 for i in target_po["weight"].tolist()]
 
     hold = list(set(old_stocklist) & set(stock_new))
     sell1 = list(set(old_stocklist) - set(hold))
@@ -81,18 +81,27 @@ def change_to(stock_new, state_dt,**poz):
             print("股票不在列表中")
 
     for i in sell_order1:
-        order.sell(i,state_dt , sell_order1[i], "sell")
-        print("卖出%s  %s股" %(i,sell_order1[i]))
+        if sell_order1[i] != 0:
+            order.sell(i,state_dt , sell_order1[i], "sell")
+        else:
+            continue
+        #print("卖出%s  %s股" %(i,sell_order1[i]))
 
 
     for i in sell_order:
-        order.sell(i,state_dt , sell_order[i], "sell")
-        print("卖出%s  %s元" %(i,sell_order[i]))
+        if sell_order[i] != 0:
+            order.sell(i,state_dt , sell_order[i], "sell")
+        else:
+            continue
+        #print("卖出%s  %s元" %(i,sell_order[i]))
         # print(err["err_code"])
         # print(err["err_msg"])
     for i in buy_order:
-        order.buy(i, state_dt, buy_order[i], "buy")
-        print("买入%s  %s元" %(i,buy_order[i]))
+        if buy_order[i] != 0:
+            order.buy(i, state_dt, buy_order[i], "buy")
+        else:
+            continue
+        #print("买入%s  %s元" %(i,buy_order[i]))
         # print(err["err_code"])
         # print(err["err_msg"])
     db.close()

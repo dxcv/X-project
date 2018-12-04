@@ -10,7 +10,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
     deal_buy = Deal.Deal(opdate)
     ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
     pro = ts.pro_api()
-    if deal_buy.cur_available_fund+1 >= buy_money: # 现金要充足
+    if deal_buy.cur_available_fund+5 >= buy_money: # 现金要充足
         sql_buy = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
         done_set_buy = db.select(sql_buy)
         if len(done_set_buy) == 0:
@@ -19,20 +19,28 @@ def buy(stock_code,opdate,buy_money,trade_side):
             resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
             if len(resu) !=0:
                 print("已经从互联网获取数据"+ str(stock_code) + str(opdate))
-            buy_price = resu["pre_close"][0]
+                buy_price = resu["pre_close"][0]
 
-            sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
-                        opdate, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),
-                        float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]), float(resu.iloc[0][7]), float(resu.iloc[0][8]))
-            db.execute(sql_insert)
+                sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
+                    opdate, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]),
+                    float(resu.iloc[0][3]), float(resu.iloc[0][4]),
+                    float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]), float(resu.iloc[0][7]),
+                    float(resu.iloc[0][8]))
+                db.execute(sql_insert)
+            else:
+                return
+
         else:
             buy_price = float(done_set_buy[0][8])
         if buy_price <= 0:
             print("买入价格异常"+ str(stock_code) + str(opdate))
-        vol, rest = divmod(min(deal_buy.cur_available_fund, buy_money), buy_price * 100)
+        vol, rest = divmod(min(deal_buy.cur_available_fund, buy_money*1.0005), buy_price * 100)
         vol = vol * 100
         if vol == 0:
-            print("买入数量为0"+ str(stock_code) + str(opdate))
+            print("买入数量为  "+str(buy_money)+"  "+ str(stock_code) + str(opdate))
+
+        print("买入数量为  " + str(buy_money) + "  " + str(stock_code) + str(opdate))
+
         # 更新账户表my_capital
         new_capital = deal_buy.cur_total_asset - vol * buy_price * 0.0005  # 手续费为万5，直接减少净资产
         new_available_fund = deal_buy.cur_available_fund - vol * buy_price * 1.0005     # 减少相应的现金。
@@ -96,7 +104,9 @@ def buy(stock_code,opdate,buy_money,trade_side):
             db.execute(sql_position_insert)
         return 1
     else:
-        print("现金余额不足"+ str(stock_code) + str(opdate))
+        print("买入现金余额不足  "+ str(stock_code) + str(opdate)+str(buy_money))
+
+
     db.close()
     return 0
 
@@ -131,7 +141,9 @@ def sell(stock_code, opdate, sell_money, trade_side):
         sell_price = float(done_set_sell_select[0][8])
 
 
-    if sell_money < deal_sell.stock_amount[stock_code]:
+    if sell_money <= deal_sell.stock_amount[stock_code]:
+        print("卖出数量为  " + str(sell_money) + "  " + str(stock_code) + str(opdate))
+
         vol = sell_money / sell_price
         # 更新账户表my_capital######
         new_capital = deal_sell.cur_total_asset  # 卖出净资产不变
@@ -171,12 +183,16 @@ def sell(stock_code, opdate, sell_money, trade_side):
         new_amount = deal_sell.stock_amount[stock_code] - vol * sell_price
         new_revenue = deal_sell.stock_revenue[stock_code]
         new_volume = new_amount / sell_price
-        new_cost_price = (new_amount - new_revenue) / new_volume
+        if new_volume != 0:
+            new_cost_price = (new_amount - new_revenue) / new_volume
+        else:
+            new_cost_price =0
+
+
         new_margin = 0
         new_side = "buy"
         if new_amount == 0:
-            sql_position_delete = "DELETE FROM my_position" \
-                                 "WHERE code = '%s' AND trdate = '%s'" %(stock_code,opdate)
+            sql_position_delete = "DELETE FROM my_position  WHERE code = '%s' AND trdate = '%s'" %(stock_code,opdate)
             db.execute(sql_position_delete)
         else:
             sql_position_update = "UPDATE my_position SET code = '%s'," \

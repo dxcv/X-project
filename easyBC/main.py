@@ -156,6 +156,8 @@ class main(object):
 
     def update_daily(self,state_dt_1, state_dt):
         db = ToMysql()
+
+
         deal_daily = Deal.Deal(state_dt_1)
         new_holding_value =0
         # 更新position表
@@ -174,6 +176,8 @@ class main(object):
                 db.execute(sql_insert)
 
             else:
+                sql_position_delete = "DELETE FROM my_position  WHERE amount = 0"
+                db.execute(sql_position_delete)
                 sql_bars = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (
                     state_dt_1, i)
                 done_set_buy = db.select(sql_bars)
