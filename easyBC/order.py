@@ -14,26 +14,25 @@ def buy(stock_code,opdate,buy_money,trade_side):
         sql_buy = "select * from stock_info a where a.state_dt = '%s' and a.stock_code = '%s'" % (opdate, stock_code)
         done_set_buy = db.select(sql_buy)
         if len(done_set_buy) == 0:
-            print("缺少买入股票当日行情数据")
+            print("缺少买入股票当日行情数据" + str(stock_code) + str(opdate))
             opdate2 = (datetime.strptime(opdate, "%Y-%m-%d")).strftime('%Y%m%d')
             resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
             if len(resu) !=0:
-                print("已经从互联网获取数据")
+                print("已经从互联网获取数据"+ str(stock_code) + str(opdate))
             buy_price = resu["pre_close"][0]
 
             sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
                         opdate, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),
                         float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]), float(resu.iloc[0][7]), float(resu.iloc[0][8]))
             db.execute(sql_insert)
-            print("缺少买入股票当日行情数据")
         else:
             buy_price = float(done_set_buy[0][8])
         if buy_price <= 0:
-            print("买入价格异常")
+            print("买入价格异常"+ str(stock_code) + str(opdate))
         vol, rest = divmod(min(deal_buy.cur_available_fund, buy_money), buy_price * 100)
         vol = vol * 100
         if vol == 0:
-            print("买入数量为0")
+            print("买入数量为0"+ str(stock_code) + str(opdate))
         # 更新账户表my_capital
         new_capital = deal_buy.cur_total_asset - vol * buy_price * 0.0005  # 手续费为万5，直接减少净资产
         new_available_fund = deal_buy.cur_available_fund - vol * buy_price * 1.0005     # 减少相应的现金。
@@ -97,7 +96,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
             db.execute(sql_position_insert)
         return 1
     else:
-        print("现金余额不足")
+        print("现金余额不足"+ str(stock_code) + str(opdate))
     db.close()
     return 0
 
@@ -112,15 +111,15 @@ def sell(stock_code, opdate, sell_money, trade_side):
                       % (opdate, stock_code)
     done_set_sell_select = db.select(sql_sell_select)
     if len(done_set_sell_select) == 0:
-        print("缺少买入股票当日行情数据")
+        print("缺少买入股票当日行情数据"+ str(stock_code) + "   "+ str(opdate))
         opdate2 = (datetime.strptime(opdate, "%Y-%m-%d")).strftime('%Y%m%d')
         resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
         if len(resu) != 0:
-            print("已经从互联网获取数据")
+            print("已经从互联网获取数据"+ str(stock_code) + "   "+str(opdate))
             sell_price = resu["pre_close"][0]
 
         else:
-            print(str(stock_code)+ "  停牌无法卖出")
+            print(str(stock_code)+ "  停牌无法卖出"+ str(stock_code) +"   "+ str(opdate))
             return
 
         sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
@@ -188,6 +187,6 @@ def sell(stock_code, opdate, sell_money, trade_side):
                                       new_side,new_code,opdate)
             db.execute(sql_position_update)
     else:
-        print("卖出金额超限")
+        print("卖出金额超限"+ str(stock_code) +"   "+ str(opdate))
     db.close()
     return 0

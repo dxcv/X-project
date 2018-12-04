@@ -178,12 +178,12 @@ class main(object):
                     state_dt_1, i)
                 done_set_buy = db.select(sql_bars)
                 if len(done_set_buy) == 0:
-                    print("缺少买入股票当日行情数据")
+                    print("缺少持仓股票  "+str(i)+"   "+str(state_dt_1)+"  行情数据")
                     opdate2 = (datetime.strptime(state_dt_1, "%Y-%m-%d")).strftime('%Y%m%d')
                     resu = self.pro.daily(ts_code=i, trade_date = opdate2)
 
                     if len(resu) != 0:
-                        print("已经从互联网获取数据")
+                        print("已经从互联网获取"+str(i)+"   "+str(state_dt_1)+"  行情数据")
                         new_price = resu["close"][0]
                         pct_change = resu["pct_change"][0]
                         sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
