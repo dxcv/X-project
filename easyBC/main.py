@@ -7,7 +7,7 @@ from easyBC import statistics
 from tools.to_mysql import ToMysql
 from easyBC import Deal
 from datetime import datetime
-
+from easyBC import statistics
 class main(object):
     def __init__(self):
         self.securities = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']     # 回测标的
@@ -181,16 +181,22 @@ class main(object):
                     print("缺少买入股票当日行情数据")
                     opdate2 = (datetime.strptime(state_dt_1, "%Y-%m-%d")).strftime('%Y%m%d')
                     resu = self.pro.daily(ts_code=i, trade_date = opdate2)
+
                     if len(resu) != 0:
                         print("已经从互联网获取数据")
-                    new_price = resu["close"][0]
-                    pct_change = resu["pct_change"][0]
+                        new_price = resu["close"][0]
+                        pct_change = resu["pct_change"][0]
+                        sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
+                            state_dt_1, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]),
+                            float(resu.iloc[0][3]), float(resu.iloc[0][4]),
+                            float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]),
+                            float(resu.iloc[0][7]), float(resu.iloc[0][8]))
+                        db.execute(sql_insert)
+                    else:
+                        print(str(i) + '  停牌')
+                        new_price = deal_daily.stock_amount[i]/deal_daily.stock_volume[i]
+                        pct_change = 1
 
-                    sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
-                        state_dt_1, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),
-                        float(resu.iloc[0][9]), float(resu.iloc[0][10]), float(resu.iloc[0][6]), float(resu.iloc[0][7]), float(resu.iloc[0][8]))
-                    db.execute(sql_insert)
-                    print("缺少买入股票当日行情数据")
                 else:
                     pct_change = done_set_buy[0][10] / 100 + 1
                     new_price = done_set_buy[0][3]

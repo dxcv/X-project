@@ -88,7 +88,7 @@ def buy(stock_code,opdate,buy_money,trade_side):
             new_cost_price = buy_price
             new_volume = vol
             new_margin = 0
-            new_side = 1
+            new_side = "buy"
 
             sql_position_insert = "insert into my_position(trdate,code,cost_price,revenue,volume,amount,margin,side) " \
                                   "VALUES ('%s','%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
@@ -117,7 +117,11 @@ def sell(stock_code, opdate, sell_money, trade_side):
         resu = pro.daily(ts_code = stock_code, trade_date = opdate2)
         if len(resu) != 0:
             print("已经从互联网获取数据")
-        sell_price = resu["pre_close"][0]
+            sell_price = resu["pre_close"][0]
+
+        else:
+            print(str(stock_code)+ "  停牌无法卖出")
+            return
 
         sql_insert = "INSERT INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
             opdate, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]), float(resu.iloc[0][3]), float(resu.iloc[0][4]),

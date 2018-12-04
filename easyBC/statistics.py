@@ -3,24 +3,23 @@ import pandas as pd
 from tools.to_mysql import ToMysql
 import numpy as np
 
-
 def get_sharp_rate():
     db =ToMysql()
 
-    sql_cap = "select * from my_capital a order by seq asc"
+    sql_cap = "select * from my_capital a order by date"
     done_exp = db.select(sql_cap)
-    cap_list = [float(x[0]) for x in done_exp]
+    cap_list = [float(x[4])/100000000 for x in done_exp]
     return_list = []
-    base_cap = float(done_exp[0][0])
+    base_cap = float(done_exp[0][4])
     for i in range(len(cap_list)):
         if i == 0:
             return_list.append(float(1.00))
         else:
-            ri = (float(done_exp[i][0]) - float(done_exp[0][0]))/float(done_exp[0][0])
+            ri = (float(done_exp[i][4]) - float(done_exp[0][4]))/float(done_exp[0][4])
             return_list.append(ri)
     std = float(np.array(return_list).std())
-    exp_portfolio = (float(done_exp[-1][0]) - float(done_exp[0][0]))/float(done_exp[0][0])
-    exp_norisk = 0.04*(5.0/12.0)
+    exp_portfolio = (float(done_exp[-1][4]) - float(done_exp[0][4]))/float(done_exp[0][4])
+    exp_norisk = 0.04*(len(cap_list)/250)
     sharp_rate = (exp_portfolio - exp_norisk)/(std)
 
     return sharp_rate,std
