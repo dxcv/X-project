@@ -8,6 +8,9 @@ from tools.to_mysql import ToMysql
 from easyBC import Deal
 from datetime import datetime
 from easyBC import statistics
+import pandas as pd
+import matplotlib.pyplot as plt
+
 class main(object):
     def __init__(self):
         self.securities = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']     # 回测标的
@@ -234,29 +237,33 @@ class main(object):
         print('Sharp Rate : ' + str(sharp))
         print('Risk Factor : ' + str(c_std))
 
-        sql_show_btc = "select * from stock_all a where a.stock_code = '000001.SH' and a.state_dt >= '%s' and a.state_dt <= '%s'" % (
+        sql_bench_btc = "select * from stock_index a where a.stock_code = '000905.SH' and a.state_dt >= '%s' and a.state_dt <= '%s'" % (
         self.start_date, self.end_date)
-        done_set_show_btc = db.select(sql_show_btc)
-        # btc_x = [x[0] for x in done_set_show_btc]
-        btc_x = list(range(len(done_set_show_btc)))
-        btc_y = [x[3] / done_set_show_btc[0][3] for x in done_set_show_btc]
-        dict_anti_x = {}
-        dict_x = {}
-        for a in range(len(btc_x)):
-            dict_anti_x[btc_x[a]] = done_set_show_btc[a][0]
-            dict_x[done_set_show_btc[a][0]] = btc_x[a]
+        done_set_bench_btc = db.select(sql_bench_btc)
+        sql_capital = "select * from my_capital"
+        done_set_show_btc = db.select(sql_capital)
 
-        fig = plt.figure(figsize=(20, 12))
-        ax = fig.add_subplot(111)
-        ax.xaxis.set_major_formatter(FuncFormatter(c_fnx))
-
-        plt.plot(btc_x, btc_y, color='blue')
-        plt.plot(profit_x, profit_y, color='red')
+        benchmark = [x[3] / done_set_bench_btc[0][3] for x in done_set_bench_btc]
+        nav = [x[4] / done_set_show_btc[0][4] for x in done_set_show_btc]
+        time = [x[0] for x in done_set_show_btc]
+        net = list(map(lambda x: x[0]-x[1]+1, zip(nav, benchmark)))
+        data = list(map(list, zip(*[time,nav,benchmark,net])))
+        nav_df = pd.DataFrame(data, columns=['time', 'nav', 'benchmark', 'net'])
+        print(nav_df)
+        fig = plt.figure()
+        plt.plot(nav_df["time"], nav_df['nav'], label='nav')
+        plt.plot(nav_df["time"], nav_df['benchmark'], label='benchmark')
+        plt.plot(nav_df["time"], nav_df['net'], label='net')
+        plt.xlabel('date')
+        plt.ylabel('return')
+        plt.legend()
         plt.show()
-        db.close()
+        return nav_df
+
 
 if __name__ == '__main__':
     a=main()
+    a.go()
     a.afterbc()
 
 

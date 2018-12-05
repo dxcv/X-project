@@ -3,15 +3,6 @@
 from collections import defaultdict
 from queue import Queue, Empty
 from threading import Thread
-events=Queue()
-
-class Event:
-    """事件对象"""
-
-    def __init__(self,event_type,data):
-        self.event_type=event_type
-        self.data = data
-
 
 class EventEngine:
     """事件驱动引擎"""
@@ -84,30 +75,6 @@ class EventEngine:
         return self.queue.qsize()
 
 
-class ClockEvent(Event):
+class ClockEvent:
     def __init__(self, event_type, data):
-        super(ClockEvent, self).__init__(event_type, data)
         self.event_type = "Clock"
-
-
-class MarketEvent(Event):
-    def __init__(self, event_type, data):
-        super(MarketEvent, self).__init__(event_type, data)
-        self.event_type = "Market"
-
-
-class StrategyEvent(Event):
-    def __init__(self, event_type, data):
-        super(StrategyEvent, self).__init__(event_type, data)
-        self.event_type = 'Strategy'
-
-
-class FillEvent(Event):
-    def __init__(self, event_type, data):
-        super(FillEvent, self).__init__(event_type, data)
-        self.event_type = 'Fill'
-
-class Order():
-    def __init__(self, event_type, data):
-        super(OrderEvent, self).__init__(event_type, data)
-        self.event_type = 'Fill'
