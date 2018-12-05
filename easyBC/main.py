@@ -250,12 +250,18 @@ class main(object):
         data = list(map(list, zip(*[time,nav,benchmark,net])))
         nav_df = pd.DataFrame(data, columns=['time', 'nav', 'benchmark', 'net'])
         print(nav_df)
-        fig = plt.figure()
+        fig,ax = plt.subplots(1, 1)
+        plt.style.use('ggplot')
         plt.plot(nav_df["time"], nav_df['nav'], label='nav')
         plt.plot(nav_df["time"], nav_df['benchmark'], label='benchmark')
         plt.plot(nav_df["time"], nav_df['net'], label='net')
         plt.xlabel('date')
         plt.ylabel('return')
+        for label in ax.get_xticklabels():
+            label.set_visible(False)
+        for label in ax.get_xticklabels()[::20]:
+            label.set_visible(True)
+
         plt.legend()
         plt.show()
         return nav_df
@@ -263,7 +269,7 @@ class main(object):
 
 if __name__ == '__main__':
     a=main()
-    a.go()
+    #a.go()
     a.afterbc()
 
 
