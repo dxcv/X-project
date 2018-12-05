@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 
 class main(object):
     def __init__(self):
-        self.securities = ['603912.SH', '300666.SZ', '300618.SZ', '002049.SZ', '300672.SZ']     # 回测标的
+        self.securities = ["600016.SH","600020.SH","600015.SH","600021.SH","600017.SH","600022.SH","600012.SH"]     # 回测标的
         self.capital = 100000000    # 初始本金
-        self.start_date = '2018-08-01'  # 回测开始时间
+        self.start_date = '2018-01-01'  # 回测开始时间
         self.end_date = '2018-12-01'  # 回测结束时间
         self.period = 'd'   # 策略运行周期, 'd' 代表日, 'm'代表分钟  现在还没有m
         # 建回测时间序列
@@ -42,7 +42,7 @@ class main(object):
         sql_wash4 = 'delete from orders'
         db.execute(sql_wash4)
         sql_setCash = "INSERT INTO my_capital VALUES (%s, %s, 0, 0, %s)"\
-                     % (repr(self.start_date), self.capital, self.capital)
+                     % (repr(self.date_seq[0]), self.capital, self.capital)
         db.execute(sql_setCash)
         sql_insert = "insert into my_position(trdate,code,cost_price,revenue,volume,amount,margin,side) " \
                      "VALUES ('%s','%s',%.2f,%.2f,%.2f,%.2f,%.2f,'%s')" \
@@ -192,7 +192,7 @@ class main(object):
                     if len(resu) != 0:
                         print("已经从互联网获取"+str(i)+"   "+str(state_dt_1)+"  行情数据")
                         new_price = resu["close"][0]
-                        pct_change = resu["pct_chg"][0]
+                        pct_change = resu["pct_chg"][0]/100+1
                         sql_insert = "INSERT IGNORE INTO stock_all(state_dt,stock_code,open,close,high,low,vol,amount,pre_close,amt_change,pct_change) VALUES ('%s', '%s', '%.2f', '%.2f','%.2f','%.2f','%i','%.2f','%.2f','%.2f','%.2f')" % (
                             state_dt_1, str(resu.iloc[0][0]), float(resu.iloc[0][2]), float(resu.iloc[0][5]),
                             float(resu.iloc[0][3]), float(resu.iloc[0][4]),
@@ -249,8 +249,12 @@ class main(object):
         net = list(map(lambda x: x[0]-x[1]+1, zip(nav, benchmark)))
         data = list(map(list, zip(*[time,nav,benchmark,net])))
         nav_df = pd.DataFrame(data, columns=['time', 'nav', 'benchmark', 'net'])
-        print(nav_df)
-        fig,ax = plt.subplots(1, 1)
+        nav_df["nav"].astype("float")
+        nav_df["benchmark"].astype("float")
+        nav_df["net"].astype("float")
+        return nav_df
+    def bcplot(self,nav_df):
+        fig, ax = plt.subplots(1, 1)
         plt.style.use('ggplot')
         plt.plot(nav_df["time"], nav_df['nav'], label='nav')
         plt.plot(nav_df["time"], nav_df['benchmark'], label='benchmark')
@@ -264,13 +268,14 @@ class main(object):
 
         plt.legend()
         plt.show()
-        return nav_df
 
 
 if __name__ == '__main__':
     a=main()
     #a.go()
-    a.afterbc()
+    nav_df = a.afterbc()
+    a.bcplot(nav_df)
+    nav_df.to_csv("./600.csv")
 
 
 

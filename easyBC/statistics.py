@@ -48,16 +48,21 @@ def r(nav_df):   #计算收益率,超额收益率，夏普比率，基准夏普�
     max_drawdown_benchmark = np.array(Drawdown_benchmark).max()
     return r_year,r_excess_year,sharpe,sharpe_benchmark,win_rate,information_ratio,max_drawdown,max_drawdown_benchmark
 
+def ret(nav_df):
+    assessment_stg = pd.DataFrame([], columns=['年化收益率', '年化超额收益率', '夏普比率', '基准夏普比率', '胜率', '信息比率', '最大回撤', '基准最大回撤'])
+    nav_df['month'] = [i[0:7] for i in nav_df['time']]
+    res = pd.DataFrame(nav_df.groupby('month').apply(r))
+    for month in list(res.index):
+        assessment_stg.loc[month] = res.loc[month, 0]
+    print(assessment_stg)
+    assessment_stg.to_csv("./data/500out.csv", encoding="gbk")
+
+
 
 if __name__ == '__main__':
-    nav_df = pd.read_csv("./data/500.csv")
-    assessment_stg = pd.DataFrame([], columns=['年化收益率', '年化超额收益率', '夏普比率', '基准夏普比率', '胜率', '信息比率', '最大回撤', '基准最大回撤'])
-    nav_df['year'] = [i[0:4] for i in nav_df['time']]
-    res = pd.DataFrame(nav_df.groupby('year').apply(r))
-    for year in list(res.index):
-        assessment_stg.loc[year] = res.loc[year, 0]
-    print(assessment_stg)
-    assessment_stg.to_csv("./data/500out.csv",encoding="gbk")
+    nav_df = pd.read_csv("./600.csv")
+    ret(nav_df)
+
 
 
 
