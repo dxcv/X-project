@@ -269,16 +269,8 @@ class main(object):
         plt.legend()
         plt.show()
 
-
 if __name__ == '__main__':
     a=main()
     #a.go()
     nav_df = a.afterbc()
     a.bcplot(nav_df)
-    nav_df.to_csv("./600.csv")
-
-
-
-
-
-

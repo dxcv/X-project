@@ -54,8 +54,11 @@ def ret(nav_df):
     res = pd.DataFrame(nav_df.groupby('month').apply(r))
     for month in list(res.index):
         assessment_stg.loc[month] = res.loc[month, 0]
+
+    pd.set_option('precision', 2)
     print(assessment_stg)
-    assessment_stg.to_csv("./data/500out.csv", encoding="gbk")
+    assessment_stg.round(2)
+    assessment_stg.to_csv("../data/500out.csv", encoding="gbk")
 
 
 
