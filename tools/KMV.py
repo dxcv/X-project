@@ -1,4 +1,4 @@
-import StringIO, time, boto3
+
 #import pandas as pd
 import numpy as np
 import scipy.optimize as sco

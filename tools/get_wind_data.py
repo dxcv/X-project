@@ -40,13 +40,15 @@ class wsd(object):
 class wss(object):
     ##获取多维数据
     w.start()
-    def __init__(self,code,date,variable="close"):
+    def __init__(self,code,date,variable):
         self.code=code
-        self.date=datetime.strftime(date,'%Y%m%d')
-        self.variable=variable
+        self.date=(datetime.strptime(date, "%Y-%m-%d")).strftime('%Y%m%d')
+        self.variable = ",".join(variable)
+
+
 
     def get_data(self):
-        indata=w.wss(self.code,self.variable,"tradeDate="+self.date+";priceAdj=F;cycle=D")
+        indata=w.wss(self.code,self.variable,"tradeDate="+self.date+";unit=1;industryType=1;priceAdj=F;cycle=D")
         if indata.ErrorCode != 0:
             print('错误:' + str(indata.ErrorCode) + '\n')
             return ()
@@ -56,12 +58,12 @@ class wss(object):
         return df
 
 class wsee(object):
-    def __init__(self,code,variable,enddate,startdate=datetime.now(),mode=1):
+    def __init__(self,code,variable,startdate,enddate,mode=1):
         self.code=code
         self.variable=variable
-        self.enddate=datetime.strftime(enddate,'%Y-%m-%d')
+        self.enddate=(datetime.strptime(enddate, "%Y-%m-%d")).strftime('%Y%m%d')
         self.year=str(enddate.year-1)
-        self.startdate=datetime.strftime(startdate,'%Y-%m-%d')
+        self.startdate=(datetime.strptime(startdate, "%Y-%m-%d")).strftime('%Y%m%d')
         self.mode=mode
 
     def get_data(self):
