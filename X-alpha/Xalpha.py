@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.matplotlib_fname()
 w.start()
+import tushare as ts
+
 # 解决中文乱码问题
 #sans-serif就是无衬线字体，是一种通用字体族。
 #常见的无衬线字体有 Trebuchet MS, Tahoma, Verdana, Arial, Helvetica, 中文的幼圆、隶书等等。
@@ -100,6 +102,10 @@ class Xalpha(object):
 
 
 if __name__ == '__main__':
+
+    ts.set_token('502bcbdbac29edf1c42ed84d5f9bd24d63af6631919820366f53e5d4')
+    pro = ts.pro_api()
+    list_500 = 
     x =  Xalpha("2018-01-22","2018-12-31","2018-01-22")
     d = x.prepare_raw_data(["600008.SH","600010.SH"],["val_floatmv","industry_sw"])
     print(d)
